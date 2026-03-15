@@ -4,6 +4,10 @@
   import ActivityGrid from './ActivityGrid.svelte';
   import TrafficLights from './TrafficLights.svelte';
   import Vehicles from './Vehicles.svelte';
+  import Crosswalk from './Crosswalk.svelte';
+  import RoadSigns from './RoadSigns.svelte';
+  import SafePlaces from './SafePlaces.svelte';
+  import Reflectors from './Reflectors.svelte';
   
   let { lang = 'sv' } = $props(); // Default to Swedish
   
@@ -90,41 +94,25 @@
         onback={handleBack}
       />
     {:else if currentView === 'crosswalk'}
-      <!-- Placeholder for crosswalk component -->
-      <div class="placeholder-view">
-        <h2>🚶 {i18nData.activities?.crosswalk || 'Crosswalk'}</h2>
-        <p>Coming soon! Practice crossing streets safely.</p>
-        <button class="back-button" onclick={handleBack}>
-          ← {i18nData.common?.back || 'Back'}
-        </button>
-      </div>
+      <Crosswalk 
+        i18n={i18nData}
+        onback={handleBack}
+      />
     {:else if currentView === 'road-signs'}
-      <!-- Placeholder for road signs component -->
-      <div class="placeholder-view">
-        <h2>🚧 {i18nData.activities?.['road-signs'] || 'Road Signs'}</h2>
-        <p>Coming soon! Learn important traffic signs.</p>
-        <button class="back-button" onclick={handleBack}>
-          ← {i18nData.common?.back || 'Back'}
-        </button>
-      </div>
+      <RoadSigns 
+        i18n={i18nData}
+        onback={handleBack}
+      />
     {:else if currentView === 'safe-places'}
-      <!-- Placeholder for safe places component -->
-      <div class="placeholder-view">
-        <h2>🏠 {i18nData.activities?.['safe-places'] || 'Safe Places'}</h2>
-        <p>Coming soon! Identify safe and dangerous places.</p>
-        <button class="back-button" onclick={handleBack}>
-          ← {i18nData.common?.back || 'Back'}
-        </button>
-      </div>
+      <SafePlaces 
+        i18n={i18nData}
+        onback={handleBack}
+      />
     {:else if currentView === 'reflectors'}
-      <!-- Placeholder for reflectors component -->
-      <div class="placeholder-view">
-        <h2>✨ {i18nData.activities?.reflectors || 'Reflectors'}</h2>
-        <p>Coming soon! Learn about being visible at night.</p>
-        <button class="back-button" onclick={handleBack}>
-          ← {i18nData.common?.back || 'Back'}
-        </button>
-      </div>
+      <Reflectors 
+        i18n={i18nData}
+        onback={handleBack}
+      />
     {/if}
   </div>
 </div>
@@ -186,50 +174,7 @@
     color: white;
   }
 
-  .placeholder-view {
-    padding: 2rem;
-    text-align: center;
-    max-width: 600px;
-    margin: 2rem auto;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
 
-  .placeholder-view h2 {
-    font-size: 36px;
-    color: #2E7D32;
-    margin: 0 0 1rem 0;
-  }
-
-  .placeholder-view p {
-    font-size: 18px;
-    color: #666;
-    margin: 0 0 2rem 0;
-    line-height: 1.5;
-  }
-
-  .back-button {
-    background: #2196F3;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 18px;
-    cursor: pointer;
-    min-height: 44px;
-    min-width: 44px;
-    transition: all 0.2s ease;
-  }
-
-  .back-button:hover {
-    background: #1976D2;
-    transform: translateY(-2px);
-  }
-
-  .back-button:active {
-    transform: translateY(0);
-  }
 
   /* Ensure minimum font sizes for accessibility */
   * {
@@ -250,10 +195,6 @@
       border-bottom: 2px solid #000;
     }
     
-    .placeholder-view {
-      border: 2px solid #000;
-    }
-    
     .language-selector {
       border-color: #000;
     }
@@ -265,12 +206,8 @@
 
   /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .lang-btn, .back-button {
+    .lang-btn {
       transition: none;
-    }
-    
-    .back-button:hover {
-      transform: none;
     }
   }
 
@@ -283,15 +220,6 @@
     }
     
     .app-header h1 {
-      font-size: 28px;
-    }
-    
-    .placeholder-view {
-      margin: 1rem;
-      padding: 1.5rem;
-    }
-    
-    .placeholder-view h2 {
       font-size: 28px;
     }
   }

@@ -1,0 +1,597 @@
+<script>
+  import { speak } from '$lib/tts';
+
+  let { i18n = {}, onback } = $props();
+
+  let currentMode = $state('overview'); // 'overview', 'flashcard', 'quiz'
+  let currentSignIndex = $state(0);
+  let score = $state(0);
+  let quizAnswers = $state([]);
+
+  const signs = [
+    {
+      id: 'stop',
+      name: 'Stopp',
+      description: 'Du måste stanna helt innan du fortsätter',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <polygon points="35,15 85,15 105,35 105,85 85,105 35,105 15,85 15,35" fill="#FF0000" stroke="#FFFFFF" stroke-width="3"/>
+        <text x="60" y="70" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">STOPP</text>
+      </svg>`,
+      color: '#FF0000'
+    },
+    {
+      id: 'crosswalk',
+      name: 'Övergångsställe',
+      description: 'Här kan fotgängare korsa gatan säkert',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <rect x="10" y="10" width="100" height="100" rx="15" fill="#0066CC" stroke="#FFFFFF" stroke-width="3"/>
+        <path d="M40 35 L50 35 L55 45 L65 45 L70 35 L80 35 L75 55 L70 75 L65 85 L55 85 L50 75 L45 55 Z" fill="white"/>
+        <rect x="30" y="90" width="60" height="8" fill="white"/>
+        <rect x="30" y="85" width="60" height="2" fill="white"/>
+      </svg>`,
+      color: '#0066CC'
+    },
+    {
+      id: 'warning',
+      name: 'Varning',
+      description: 'Var extra försiktig här',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <polygon points="60,15 100,90 20,90" fill="#FFCC00" stroke="#000000" stroke-width="3"/>
+        <text x="60" y="70" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="black" text-anchor="middle">!</text>
+      </svg>`,
+      color: '#FFCC00'
+    },
+    {
+      id: 'bicycle-path',
+      name: 'Cykelväg',
+      description: 'Här får endast cyklar åka',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="#0066CC" stroke="#FFFFFF" stroke-width="3"/>
+        <circle cx="35" cy="70" r="12" fill="none" stroke="white" stroke-width="3"/>
+        <circle cx="85" cy="70" r="12" fill="none" stroke="white" stroke-width="3"/>
+        <path d="M35 70 L60 45 L75 55 M60 45 L60 25" stroke="white" stroke-width="3" fill="none"/>
+      </svg>`,
+      color: '#0066CC'
+    },
+    {
+      id: 'playground',
+      name: 'Lekplats',
+      description: 'Barn leker här - kör försiktigt',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <rect x="10" y="10" width="100" height="100" rx="15" fill="#FF6600" stroke="#FFFFFF" stroke-width="3"/>
+        <circle cx="45" cy="35" r="8" fill="white"/>
+        <rect x="40" y="45" width="10" height="15" fill="white"/>
+        <rect x="35" y="60" width="20" height="8" fill="white"/>
+        <rect x="40" y="68" width="4" height="12" fill="white"/>
+        <rect x="46" y="68" width="4" height="12" fill="white"/>
+        <circle cx="75" cy="35" r="8" fill="white"/>
+        <rect x="70" y="45" width="10" height="15" fill="white"/>
+        <path d="M65 55 L75 65 M85 55 L75 65" stroke="white" stroke-width="3"/>
+        <rect x="73" y="68" width="4" height="12" fill="white"/>
+      </svg>`,
+      color: '#FF6600'
+    },
+    {
+      id: 'speed-limit',
+      name: 'Hastighetsbegränsning 30',
+      description: 'Bilar får inte köra fortare än 30 km/h',
+      svg: `<svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="50" fill="white" stroke="#FF0000" stroke-width="5"/>
+        <text x="60" y="75" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="black" text-anchor="middle">30</text>
+      </svg>`,
+      color: '#FF0000'
+    }
+  ];
+
+  function getI18nValue(key) {
+    return key.split('.').reduce((obj, k) => obj?.[k], obj => obj || key);
+  }
+
+  function showSign(index) {
+    currentSignIndex = index;
+    currentMode = 'flashcard';
+    const sign = signs[index];
+    speak(`${sign.name}. ${sign.description}`);
+  }
+
+  function startQuiz() {
+    currentMode = 'quiz';
+    score = 0;
+    quizAnswers = [];
+    generateQuizQuestion();
+  }
+
+  function generateQuizQuestion() {
+    // Randomize signs and create multiple choice
+    const correctSign = signs[Math.floor(Math.random() * signs.length)];
+    const wrongSigns = signs.filter(s => s.id !== correctSign.id)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2);
+    
+    quizAnswers = [correctSign, ...wrongSigns].sort(() => Math.random() - 0.5);
+    currentSignIndex = signs.findIndex(s => s.id === correctSign.id);
+  }
+
+  function handleQuizAnswer(selectedSign) {
+    const correctSign = signs[currentSignIndex];
+    if (selectedSign.id === correctSign.id) {
+      score++;
+      speak(getI18nValue('common.excellent'));
+    } else {
+      speak(`${getI18nValue('traffic-lights.try-again')}. ${correctSign.name}`);
+    }
+    
+    setTimeout(() => {
+      generateQuizQuestion();
+    }, 2000);
+  }
+
+  function goBack() {
+    currentMode = 'overview';
+  }
+</script>
+
+<div class="road-signs-container">
+  <header class="activity-header">
+    <button class="back-button" onclick={onback}>
+      ← {getI18nValue('common.back')}
+    </button>
+    <h1>🚧 {getI18nValue('road-signs.title')}</h1>
+  </header>
+
+  <div class="road-signs-content">
+    {#if currentMode === 'overview'}
+      <!-- Signs overview -->
+      <div class="overview-section">
+        <div class="mode-buttons">
+          <button class="mode-button" onclick={startQuiz}>
+            {getI18nValue('road-signs.match')}
+          </button>
+        </div>
+
+        <div class="signs-grid">
+          {#each signs as sign, index}
+            <button 
+              class="sign-card"
+              onclick={() => showSign(index)}
+            >
+              <div class="sign-icon">
+                {@html sign.svg}
+              </div>
+              <div class="sign-name">{sign.name}</div>
+            </button>
+          {/each}
+        </div>
+      </div>
+    {/if}
+
+    {#if currentMode === 'flashcard'}
+      <!-- Individual sign display -->
+      <div class="flashcard-section">
+        <div class="flashcard">
+          <div class="sign-display">
+            {@html signs[currentSignIndex].svg}
+          </div>
+          
+          <div class="sign-info">
+            <h2>{signs[currentSignIndex].name}</h2>
+            <p>{signs[currentSignIndex].description}</p>
+          </div>
+          
+          <div class="navigation">
+            <button 
+              class="nav-button" 
+              onclick={() => showSign(currentSignIndex === 0 ? signs.length - 1 : currentSignIndex - 1)}
+              disabled={signs.length <= 1}
+            >
+              ← Föregående
+            </button>
+            <button class="nav-button back" onclick={goBack}>
+              Tillbaka till översikt
+            </button>
+            <button 
+              class="nav-button" 
+              onclick={() => showSign(currentSignIndex === signs.length - 1 ? 0 : currentSignIndex + 1)}
+              disabled={signs.length <= 1}
+            >
+              Nästa →
+            </button>
+          </div>
+        </div>
+      </div>
+    {/if}
+
+    {#if currentMode === 'quiz'}
+      <!-- Quiz mode -->
+      <div class="quiz-section">
+        <div class="quiz-header">
+          <h2>{getI18nValue('road-signs.what-does-this-mean')}</h2>
+          <div class="score">Poäng: {score}</div>
+        </div>
+        
+        <div class="quiz-sign">
+          {@html signs[currentSignIndex].svg}
+        </div>
+        
+        <div class="quiz-options">
+          {#each quizAnswers as option}
+            <button 
+              class="quiz-option"
+              onclick={() => handleQuizAnswer(option)}
+            >
+              {option.name}
+            </button>
+          {/each}
+        </div>
+        
+        <button class="back-quiz-button" onclick={goBack}>
+          Avsluta quiz
+        </button>
+      </div>
+    {/if}
+  </div>
+</div>
+
+<style>
+  .road-signs-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #FFF3E0 0%, #E8F5E8 50%, #F3E5F5 100%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .activity-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 2rem;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .back-button {
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .back-button:hover {
+    background: #1976D2;
+  }
+
+  .activity-header h1 {
+    font-size: 32px;
+    color: #2E7D32;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  .road-signs-content {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .overview-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .mode-buttons {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .mode-button {
+    background: #FF9800;
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+    margin: 0 0.5rem;
+  }
+
+  .mode-button:hover {
+    background: #F57C00;
+    transform: translateY(-2px);
+  }
+
+  .signs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .sign-card {
+    background: white;
+    border: 3px solid #ddd;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 44px;
+  }
+
+  .sign-card:hover {
+    border-color: #4CAF50;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .sign-icon {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sign-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 1rem;
+  }
+
+  .flashcard-section {
+    display: flex;
+    justify-content: center;
+  }
+
+  .flashcard {
+    background: white;
+    border-radius: 20px;
+    padding: 3rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .sign-display {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 16px;
+  }
+
+  .sign-info h2 {
+    font-size: 32px;
+    color: #2E7D32;
+    margin: 0 0 1rem 0;
+  }
+
+  .sign-info p {
+    font-size: 20px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0 0 2rem 0;
+  }
+
+  .navigation {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .nav-button {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .nav-button:hover {
+    background: #45A049;
+  }
+
+  .nav-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .nav-button.back {
+    background: #9E9E9E;
+  }
+
+  .nav-button.back:hover {
+    background: #757575;
+  }
+
+  .quiz-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .quiz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-header h2 {
+    font-size: 28px;
+    color: #2E7D32;
+    margin: 0;
+  }
+
+  .score {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FF9800;
+    background: #FFF3E0;
+    padding: 8px 16px;
+    border-radius: 20px;
+  }
+
+  .quiz-sign {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 2rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 16px;
+  }
+
+  .quiz-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .quiz-option {
+    background: #E3F2FD;
+    color: #1565C0;
+    border: 2px solid #2196F3;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .quiz-option:hover {
+    background: #2196F3;
+    color: white;
+    transform: translateY(-2px);
+  }
+
+  .back-quiz-button {
+    background: #9E9E9E;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    min-height: 44px;
+    min-width: 44px;
+    transition: all 0.2s ease;
+  }
+
+  .back-quiz-button:hover {
+    background: #757575;
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .road-signs-content {
+      padding: 1rem;
+    }
+    
+    .activity-header {
+      padding: 1rem;
+    }
+    
+    .activity-header h1 {
+      font-size: 24px;
+    }
+    
+    .signs-grid {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .sign-card {
+      min-height: 180px;
+      padding: 1rem;
+    }
+    
+    .sign-icon {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .sign-display {
+      width: 120px;
+      height: 120px;
+    }
+    
+    .quiz-sign {
+      width: 100px;
+      height: 100px;
+    }
+    
+    .navigation {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .quiz-options {
+      grid-template-columns: 1fr;
+    }
+    
+    .quiz-header {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .overview-section, .flashcard, .quiz-section {
+      border: 2px solid #000;
+    }
+    
+    .sign-card {
+      border-color: #000;
+    }
+    
+    .sign-card:hover {
+      border-color: #000;
+      background: #f0f0f0;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .mode-button:hover, .sign-card:hover, .quiz-option:hover {
+      transform: none;
+    }
+  }
+
+  /* Ensure minimum font sizes for accessibility */
+  * {
+    font-size: max(16px, 1em);
+  }
+</style>
