@@ -99,7 +99,7 @@ export const ALL_APPS: AppDef[] = [
   { id: 'perspective-taking', name: 'app.perspective_taking', description: 'app.perspective_taking.desc', category: 'social', icon: '/icons/perspective-taking.svg', route: '/apps/perspective-taking', ready: true },
   { id: 'sequence-trainer', name: 'app.sequence_trainer', description: 'app.sequence_trainer.desc', category: 'learning', icon: '/icons/sequence-trainer.svg', route: '/apps/sequence-trainer', ready: true },
   { id: 'category-sort', name: 'app.category_sort', description: 'app.category_sort.desc', category: 'learning', icon: '/icons/category-sort.svg', route: '/apps/category-sort', ready: true },
-  { id: 'sound-sensitivity', name: 'app.sound_sensitivity', description: 'app.sound_sensitivity.desc', category: 'emotions', icon: '/icons/sound-sensitivity.svg', route: '/apps/sound-sensitivity', ready: true },
+  { id: 'sound-sensitivity', name: 'app.sound_sensitivity', description: 'app.sound_sensitivity.desc', category: 'emotions', icon: '/icons/sound-sensitivity.svg', route: '/apps/sound-sensitivity', ready: false },
   { id: 'sensory-profile', name: 'app.sensory_profile', description: 'app.sensory_profile.desc', category: 'daily', icon: '/icons/sensory-profile.svg', route: '/apps/sensory-profile', ready: true },
   { id: 'transition-helper', name: 'app.transition_helper', description: 'app.transition_helper.desc', category: 'daily', icon: '/icons/transition-helper.svg', route: '/apps/transition-helper', ready: true },
   { id: 'time-perception', name: 'app.time_perception', description: 'app.time_perception.desc', category: 'learning', icon: '/icons/time-perception.svg', route: '/apps/time-perception', ready: true },
