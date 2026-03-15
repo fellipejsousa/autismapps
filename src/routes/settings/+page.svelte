@@ -180,6 +180,28 @@
     };
     input.click();
   }
+  
+  // User name management
+  let userName = $state('');
+  
+  $effect(() => {
+    if (browser) {
+      const stored = localStorage.getItem('userName');
+      if (stored) userName = stored;
+    }
+  });
+  
+  function updateUserName() {
+    if (browser) {
+      const trimmed = userName.trim();
+      if (trimmed) {
+        localStorage.setItem('userName', trimmed);
+        speak($t('settings.your_name') + ': ' + trimmed);
+      } else {
+        localStorage.removeItem('userName');
+      }
+    }
+  }
 </script>
 
 <div class="settings-page">
@@ -201,6 +223,22 @@
 
   <div class="settings-list">
     <!-- SIMPLE MODE -->
+
+    <!-- User name -->
+    <div class="setting">
+      <span class="setting-label">{$t('settings.your_name')}</span>
+      <div class="setting-options">
+        <input
+          type="text"
+          bind:value={userName}
+          onblur={updateUserName}
+          onkeydown={(e) => e.key === 'Enter' && updateUserName()}
+          class="name-input-setting"
+          placeholder="..."
+          autocomplete="given-name"
+        />
+      </div>
+    </div>
 
     <!-- Language -->
     <div class="setting">
@@ -659,4 +697,23 @@
   .lang-flag { font-size: 1.2em; }
   .lang-name { font-size: 0.9em; }
   .lang-soon { font-size: 0.75em; }
+
+  /* User name input */
+  .name-input-setting {
+    padding: 8px 16px;
+    font-size: 0.95em;
+    font-weight: 500;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--text);
+    transition: border-color 0.2s ease;
+    min-height: 40px;
+    min-width: 200px;
+    text-align: center;
+  }
+  .name-input-setting:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
 </style>

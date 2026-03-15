@@ -204,9 +204,16 @@ export async function createDiploma(childName: string, achievementKey: string, a
   const profileId = get(activeProfileId);
   if (!profileId) throw new Error('No active profile');
 
+  // Use localStorage userName as fallback if no childName provided
+  let finalChildName = childName;
+  if (!finalChildName && browser) {
+    const storedName = localStorage.getItem('userName');
+    if (storedName) finalChildName = storedName;
+  }
+
   const diploma: Diploma = {
     profileId,
-    childName,
+    childName: finalChildName,
     achievementKey,
     appId,
     earnedAt: new Date(),

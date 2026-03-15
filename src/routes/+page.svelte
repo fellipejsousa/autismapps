@@ -7,6 +7,7 @@
   import { ALL_APPS, CATEGORY_META, type AppCategory } from '$lib/apps';
   import { flagSvg } from '$lib/flags';
   import { fly, fade } from 'svelte/transition';
+  import WelcomeModal from '$lib/components/WelcomeModal.svelte';
 
   let activeCategory = $state<AppCategory | null>(null);
 
@@ -20,6 +21,32 @@
   let langOpen = $state(false);
   let langRef: HTMLDivElement | undefined = $state();
   let aboutOpen = $state(false);
+  
+  // Welcome modal state
+  let showWelcome = $state(false);
+  let userName = $state('');
+  let userAvatar = $state('👋');
+  
+  // Check for stored user name on load
+  $effect(() => {
+    if (browser) {
+      const storedName = localStorage.getItem('userName');
+      const storedAvatar = localStorage.getItem('userAvatar');
+      
+      if (storedName) {
+        userName = storedName;
+        userAvatar = storedAvatar || '👋';
+      } else {
+        showWelcome = true;
+      }
+    }
+  });
+  
+  function handleWelcomeComplete(name: string, avatar: string) {
+    userName = name;
+    userAvatar = avatar;
+    showWelcome = false;
+  }
 
   function toggleLang() {
     langOpen = !langOpen;
@@ -70,7 +97,12 @@
   function openApp(app: typeof ALL_APPS[0]) {
     if (app.ready) {
       speak($t(app.name));
-      goto(base + app.route);
+      const url = new URL(base + app.route, window.location.origin);
+      if (userName) {
+        url.searchParams.set('userName', userName);
+        url.searchParams.set('userAvatar', userAvatar);
+      }
+      goto(url.pathname + url.search);
     } else {
       speak($t('app.coming_soon'));
     }
@@ -94,8 +126,13 @@
       draggable="false"
     />
     <div class="hero-text-overlay">
-      <h2 class="hero-title">{$t('app.title.brand')}</h2>
-      <p class="hero-subtitle">{$t('app.subtitle')}</p>
+      {#if userName}
+        <h2 class="hero-title">{$t('welcome.hello_name', { name: userName })}</h2>
+        <p class="hero-subtitle">{$t('app.subtitle')}</p>
+      {:else}
+        <h2 class="hero-title">{$t('app.title.brand')}</h2>
+        <p class="hero-subtitle">{$t('app.subtitle')}</p>
+      {/if}
     </div>
 
     <!-- Floating toolbar on hero -->
@@ -266,6 +303,9 @@
       </div>
     </div>
   {/if}
+  
+  <!-- Welcome Modal -->
+  <WelcomeModal open={showWelcome} onComplete={handleWelcomeComplete} />
 </div>
 
 <style>
