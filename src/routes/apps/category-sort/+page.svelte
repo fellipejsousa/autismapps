@@ -525,7 +525,7 @@
     </div>
   {/if}
 
-  <footer class="cr"><p>Pictogram: ARASAAC · Autismappar · CC BY-NC-SA 4.0</p></footer>
+  <footer class="cr"><p>Pictogram: ARASAAC · {$t('app.title.brand')} · CC BY-NC-SA 4.0</p></footer>
 </div>
 
 <style>

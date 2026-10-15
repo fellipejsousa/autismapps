@@ -119,7 +119,7 @@
 
     <div class="nav-actions">
       <div class="lang-switcher" bind:this={langRef}>
-        <button class="nav-icon-button language-button" onclick={() => langOpen = !langOpen} aria-label="Byt språk" aria-expanded={langOpen}>
+        <button class="nav-icon-button language-button" onclick={() => langOpen = !langOpen} aria-label={$t('settings.language')} aria-expanded={langOpen}>
           <span class="lang-flag">{@html flagSvg(currentFlag)}</span>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
         </button>
@@ -222,7 +222,7 @@
 
   <footer class="site-footer">
     <a class="footer-brand" href={base + '/'}><span class="brand-mark small" aria-hidden="true"><span></span><span></span><span></span></span>{$t('app.title.brand')}</a>
-    <p>© {new Date().getFullYear()} Autismappar</p>
+    <p>© {new Date().getFullYear()} {$t('app.title.brand')}</p>
     <a href={base + '/instruktioner'}>{$t('instructions.title')}</a>
     <a href={base + '/about'}>{$t('about.title')}</a>
   </footer>

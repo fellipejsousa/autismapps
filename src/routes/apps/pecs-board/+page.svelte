@@ -82,7 +82,7 @@
       </div>
     {/if}
   </main>
-  <footer class="cr"><p>PECS® (Frost & Bondy) · Autismappar · CC BY-NC-SA 4.0</p></footer>
+  <footer class="cr"><p>PECS® (Frost & Bondy) · {$t('app.title.brand')} · CC BY-NC-SA 4.0</p></footer>
 </div>
 
 <style>

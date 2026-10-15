@@ -166,7 +166,7 @@
     </div>
   </main>
 
-  <footer class="cr"><p>Autismappar · CC BY-NC-SA 4.0 · Fitzgerald Key</p></footer>
+  <footer class="cr"><p>{$t('app.title.brand')} · CC BY-NC-SA 4.0 · Fitzgerald Key</p></footer>
 </div>
 
 <style>

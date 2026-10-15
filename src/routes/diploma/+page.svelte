@@ -87,7 +87,7 @@
           </div>
 
           <div class="diploma-footer">
-            <span>Autismappar v0.0.1</span>
+            <span>{$t('app.title.brand')} v0.0.1</span>
             <span>·</span>
             <span>autismappar.se</span>
           </div>

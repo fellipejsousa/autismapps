@@ -176,7 +176,7 @@
   </main>
 
   <footer class="credit">
-    <p>Autismappar · CC BY-NC-SA 4.0</p>
+    <p>{$t('app.title.brand')} · CC BY-NC-SA 4.0</p>
   </footer>
 </div>
 

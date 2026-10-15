@@ -208,7 +208,7 @@
     {/if}
   </main>
 
-  <footer class="cr"><p>Autismappar · CC BY-NC-SA 4.0</p></footer>
+  <footer class="cr"><p>{$t('app.title.brand')} · CC BY-NC-SA 4.0</p></footer>
 </div>
 
 <style>

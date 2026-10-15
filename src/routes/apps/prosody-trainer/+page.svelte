@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-  <title>{$t('prosody.title')} — Autismappar</title>
+  <title>{$t('prosody.title')} — {$t('app.title.brand')}</title>
 </svelte:head>
 
 <WelcomeDialog

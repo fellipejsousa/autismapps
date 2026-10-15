@@ -194,7 +194,7 @@
     {/if}
   </main>
 
-  <footer class="cr"><p>Widgit-inspirerat · ARASAAC (CC BY-NC-SA) · Autismappar</p></footer>
+  <footer class="cr"><p>Widgit-inspirerat · ARASAAC (CC BY-NC-SA) · {$t('app.title.brand')}</p></footer>
 </div>
 
 <style>
