@@ -1,7 +1,5 @@
 <script>
-  import { goto } from '$app/navigation';
-  import { base } from '$app/paths';
-  import { t } from '$lib/i18n';
+  import { locale, t } from '$lib/i18n';
   import { flagSvg } from '$lib/flags';
   import { fade } from 'svelte/transition';
   import { ALL_APPS } from '$lib/apps';
@@ -75,6 +73,12 @@
       </ul>
     </section>
 
+    <section class="section privacy-link">
+      <h2>{$t('about.privacy.title')}</h2>
+      <p>{$t('about.privacy.summary')}</p>
+      <a href={$locale === 'sv' ? 'https://autismappar.se/dataskydd.html' : 'https://autismapps.online/dataskydd.html'}>{$t('about.privacy.link')}</a>
+    </section>
+
     <section class="section developer">
       <h2>{$t('about.developer')}</h2>
       <p><strong>Daniel Nylander</strong></p>
@@ -110,6 +114,7 @@
   .method strong { display:block; margin-bottom:.25rem; }
   .method p { font-size:.9rem; margin:0; color:var(--text-secondary); }
   .credits-list a { color:var(--accent, #2196f3); }
+  .privacy-link a { color:var(--accent, #2196f3); font-weight:700; }
   .developer { text-align:center; }
   .links { display:flex; flex-direction:column; gap:.5rem; margin-top:.75rem; }
   .links a { color:var(--text-secondary); text-decoration:none; }
