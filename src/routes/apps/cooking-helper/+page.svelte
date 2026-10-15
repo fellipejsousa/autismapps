@@ -89,7 +89,7 @@
         {/each}
       </div>
     </div>
-  {:else}
+  {:else if activeRecipe}
     <div class="step-view" transition:fade>
       <div class="progress-dots">
         {#each activeRecipe.steps as _, i}
@@ -105,7 +105,7 @@
 
       <div class="step-nav">
         <button class="nav-btn" onclick={prevStep} disabled={stepIdx === 0}>⬅️</button>
-        <button class="speak-btn" onclick={() => speak($t(activeRecipe.steps[stepIdx].text))}>🔊</button>
+        <button class="speak-btn" onclick={() => speak($t(activeRecipe!.steps[stepIdx].text))}>🔊</button>
         <button class="nav-btn" onclick={nextStep} disabled={stepIdx >= activeRecipe.steps.length - 1}>➡️</button>
       </div>
 

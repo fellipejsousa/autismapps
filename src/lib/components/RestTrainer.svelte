@@ -233,11 +233,12 @@
 
         <!-- Speed Control -->
         <div class="speed-control">
-          <label class="speed-label">{$t('restTrainer.speed')}: {speed.toFixed(1)}x</label>
+          <label class="speed-label" for="rest-trainer-speed">{$t('restTrainer.speed')}: {speed.toFixed(1)}x</label>
           <div class="speed-row">
             <button class="speed-btn" onclick={() => adjustSpeed(-0.1)} disabled={speed <= MIN_SPEED}>−</button>
             <input
               type="range"
+              id="rest-trainer-speed"
               min={MIN_SPEED}
               max={MAX_SPEED}
               step="0.1"

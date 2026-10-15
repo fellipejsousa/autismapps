@@ -130,8 +130,8 @@
         <h2>{selectedExercise.icon} {$t(selectedExercise.labelKey)}</h2>
 
         <div class="speed-control">
-          <label>{$t('oralMotor.speed')}: {speechRate.toFixed(1)}x</label>
-          <input type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
+          <label for="oral-motor-speed">{$t('oralMotor.speed')}: {speechRate.toFixed(1)}x</label>
+          <input id="oral-motor-speed" type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
         </div>
 
         <div class="steps">

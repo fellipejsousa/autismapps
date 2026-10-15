@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,8 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const PRESETS = [
+  type Preset = { min: number; icon: string; key: string };
+  const PRESETS: Preset[] = [
     { min: 5, icon: '🧹', key: 'timeTracker.preset.tidy' },
     { min: 10, icon: '📚', key: 'timeTracker.preset.homework' },
     { min: 15, icon: '🎮', key: 'timeTracker.preset.play' },
@@ -18,11 +19,11 @@
   let running = $state(false);
   let totalSeconds = $state(0);
   let remaining = $state(0);
-  let timer = null;
-  let currentPreset = $state(null);
+  let timer: ReturnType<typeof setInterval> | null = null;
+  let currentPreset = $state<Preset | null>(null);
   let finished = $state(false);
 
-  function start(preset) {
+  function start(preset: Preset) {
     currentPreset = preset;
     totalSeconds = preset.min * 60;
     remaining = totalSeconds;
@@ -33,6 +34,7 @@
   }
 
   function tick() {
+    if (timer) clearInterval(timer);
     timer = setInterval(() => {
       remaining--;
       if (remaining <= 0) {
@@ -84,7 +86,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if currentPreset}
       <div class="timer-display">
         <div class="circle">
           <svg viewBox="0 0 100 100">

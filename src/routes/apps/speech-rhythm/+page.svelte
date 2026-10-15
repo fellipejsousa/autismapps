@@ -170,8 +170,8 @@
         <button class="btn listen-btn" onclick={playWord} disabled={isPlaying}>🔊 {$t('speechRhythm.listen')}</button>
         <div class="metronome">
           <div class="tempo-control">
-            <label>{$t('speechRhythm.speed')}: {bpm} {$t('speechRhythm.bpm')}</label>
-            <input type="range" min="40" max="120" step="10" bind:value={bpm} />
+            <label for="speech-rhythm-speed">{$t('speechRhythm.speed')}: {bpm} {$t('speechRhythm.bpm')}</label>
+            <input id="speech-rhythm-speed" type="range" min="40" max="120" step="10" bind:value={bpm} />
           </div>
           <div class="metro-dots">
             {#each [0,1,2,3] as beat}

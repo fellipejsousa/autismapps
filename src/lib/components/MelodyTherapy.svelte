@@ -335,8 +335,8 @@
 
         <!-- Tempo control -->
         <div class="tempo-control">
-          <label>{$t('melodyTherapy.tempo')}: {tempo} BPM</label>
-          <input type="range" min="40" max="100" step="5" bind:value={tempo} />
+          <label for="melody-tempo">{$t('melodyTherapy.tempo')}: {tempo} BPM</label>
+          <input id="melody-tempo" type="range" min="40" max="100" step="5" bind:value={tempo} />
           <div class="tempo-labels">
             <span>🐢</span>
             <span>🐇</span>

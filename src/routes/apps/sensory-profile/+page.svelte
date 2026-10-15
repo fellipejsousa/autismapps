@@ -301,7 +301,7 @@
             {#each SENSES as sense (sense.id)}
               {@const rating = currentProfile.ratings[sense.id]}
               {#if rating && rating !== 'neutral'}
-                {@const strategies = STRATEGIES[sense.id]?.[rating] || []}
+                {@const strategies = STRATEGIES[sense.id as keyof typeof STRATEGIES]?.[rating as 'seeking' | 'avoiding'] || []}
                 <div class="strategy-section" style="--sense-color: {sense.color}">
                   <h3>
                     {sense.emoji} {$t('sensory.strategies.forSense', { sense: $t(sense.label) })}
@@ -360,7 +360,7 @@
             {#each SENSES as sense (sense.id)}
               {@const rating = currentProfile.ratings[sense.id]}
               {#if rating && rating !== 'neutral'}
-                {@const strategies = STRATEGIES[sense.id]?.[rating] || []}
+                {@const strategies = STRATEGIES[sense.id as keyof typeof STRATEGIES]?.[rating as 'seeking' | 'avoiding'] || []}
                 <div class="print-strategy">
                   <h3>{sense.emoji} {$t(sense.label)}: {$t(`sensory.rating.${rating}`)}</h3>
                   <ul>

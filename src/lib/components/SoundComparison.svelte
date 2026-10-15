@@ -1,11 +1,11 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import SagittalView from './SagittalView.svelte';
   import { tonguePositions } from '$lib/data/tongue-positions';
 
   export let darkMode = false;
   export let onClose = () => {};
-  export let onSpeak = (text) => {};
+  export let onSpeak = (text: string) => {};
 
   const allSounds = Object.keys(tonguePositions);
 

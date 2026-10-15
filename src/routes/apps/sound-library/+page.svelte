@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,9 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const CATEGORIES = [
+  type Sound = { icon: string; label: string; text: string };
+  type SoundCategory = { id: string; icon: string; sounds: Sound[] };
+  const CATEGORIES: SoundCategory[] = [
     { id: 'animals', icon: '🐾', sounds: [
       { icon: '🐶', label: 'soundLibrary.dog', text: 'Vov vov!' },
       { icon: '🐱', label: 'soundLibrary.cat', text: 'Mjau!' },
@@ -38,16 +40,16 @@
     ]},
   ];
 
-  let selectedCat = $state(null);
-  let playing = $state(null);
+  let selectedCat = $state<SoundCategory | null>(null);
+  let playing = $state<string | null>(null);
 
-  function playSound(sound) {
+  function playSound(sound: Sound) {
     playing = sound.label;
     speak(sound.text);
     setTimeout(() => { playing = null; }, 1500);
   }
 
-  function selectCat(cat) {
+  function selectCat(cat: SoundCategory) {
     selectedCat = cat;
     speak($t(`soundLibrary.cat.${cat.id}`));
   }
@@ -74,7 +76,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if selectedCat}
       <h2>{selectedCat.icon} {$t(`soundLibrary.cat.${selectedCat.id}`)}</h2>
       <div class="sounds">
         {#each selectedCat.sounds as sound}

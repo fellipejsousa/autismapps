@@ -66,7 +66,7 @@ export const phrases = [
       { note: 'G4', duration: 0.5 },
     ],
     category: 'greetings',
-    arasaacId: 12264,
+    arasaacId: 6944,
   },
   {
     id: 'god-natt',
@@ -91,7 +91,7 @@ export const phrases = [
       { note: 'G4', duration: 0.6 },
     ],
     category: 'wants',
-    arasaacId: 36257,
+    arasaacId: 5441,
   },
   {
     id: 'jag-vill-inte',
@@ -125,7 +125,7 @@ export const phrases = [
       { note: 'C4', duration: 0.4 },
     ],
     category: 'wants',
-    arasaacId: 2463,
+    arasaacId: 4962,
   },
 
   // === Socialt (Social) ===
@@ -206,7 +206,7 @@ export const phrases = [
       { note: 'G4', duration: 0.5 },
     ],
     category: 'everyday',
-    arasaacId: 36755,
+    arasaacId: 7764,
   },
   {
     id: 'vad-ar-det',

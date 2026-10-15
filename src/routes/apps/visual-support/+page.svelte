@@ -152,7 +152,9 @@
     {#if activeSchedule}<button class="sub-back" onclick={() => { activeSchedule = null; editMode = false }} aria-label="Tillbaka">←</button>{/if}
     <h1>{activeSchedule ? activeSchedule.name : $t('vs.title')}</h1>
 
-    <span class="progress-badge">{completedCount()}/{activeSchedule.steps.length}</span>
+    {#if activeSchedule}
+      <span class="progress-badge">{completedCount()}/{activeSchedule.steps.length}</span>
+    {/if}
 
   </div>
 
@@ -230,7 +232,6 @@
 
 <style>
   .vs-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
   .progress-badge { font-weight: 700; font-size: 0.9em; color: #27AE60; }
 
   .home-page { flex: 1; padding: 16px; }

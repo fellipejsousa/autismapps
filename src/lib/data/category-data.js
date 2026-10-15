@@ -4,6 +4,7 @@
  * ARASAAC URL: https://static.arasaac.org/pictograms/{id}/{id}_500.png
  */
 
+/** @param {number} id */
 export function arasaacUrl(id) {
   return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 }
@@ -62,7 +63,7 @@ export const CATEGORY_SETS = [
         items: [
           { id: 'shirt', nameKey: 'categorySort.item.shirt', arasaacId: 13640 },
           { id: 'pants', nameKey: 'categorySort.item.pants', arasaacId: 2565 },
-          { id: 'shoe', nameKey: 'categorySort.item.shoe', arasaacId: 32922 },
+          { id: 'shoe', nameKey: 'categorySort.item.shoe', arasaacId: 32923 },
           { id: 'hat', nameKey: 'categorySort.item.hat', arasaacId: 2572 },
           { id: 'sock', nameKey: 'categorySort.item.sock', arasaacId: 8339 },
           { id: 'jacket', nameKey: 'categorySort.item.jacket', arasaacId: 4872 },
@@ -443,13 +444,15 @@ export const CATEGORY_SETS = [
 ];
 
 /** Get all sets for a given level */
+/** @param {number} level */
 export function getSetsForLevel(level) {
   return CATEGORY_SETS.filter((s) => s.level === level);
 }
 
 /** Get all items from all categories in a set, shuffled */
+/** @param {typeof CATEGORY_SETS[number]} categorySet */
 export function getAllItems(categorySet) {
-  if (categorySet.isOddOneOut) return [];
+  if (categorySet.isOddOneOut || !categorySet.categories) return [];
   const items = [];
   for (const cat of categorySet.categories) {
     for (const item of cat.items) {

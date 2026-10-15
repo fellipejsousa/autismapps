@@ -1,4 +1,4 @@
-export type AppCategory = 'communication' | 'daily' | 'time' | 'emotions' | 'learning' | 'play' | 'speech';
+export type AppCategory = 'communication' | 'daily' | 'time' | 'emotions' | 'learning' | 'play' | 'speech' | 'social';
 
 export interface AppDef {
   id: string;
@@ -17,7 +17,8 @@ export const CATEGORY_META: Record<AppCategory, { color: string; label: string; 
   emotions:      { color: '#9B59B6', label: 'app.category.emotions', emoji: '💜' },
   learning:      { color: '#F1C40F', label: 'app.category.learning', emoji: '📚' },
   play:          { color: '#E74C3C', label: 'app.category.play', emoji: '🎮' },
-  speech:        { color: '#E91E63', label: 'app.category.speech', emoji: '🗣️' }
+  speech:        { color: '#E91E63', label: 'app.category.speech', emoji: '🗣️' },
+  social:        { color: '#55776A', label: 'app.category.social', emoji: '🤝' }
 };
 
 export const ALL_APPS: AppDef[] = [
@@ -72,7 +73,6 @@ export const ALL_APPS: AppDef[] = [
   { id: 'speech-practice', name: 'app.speech_practice', description: 'app.speech_practice.desc', category: 'speech', icon: '/icons/speech-practice.svg', route: '/apps/speech-practice', ready: true },
   { id: 'syllable-jump', name: 'app.syllable_jump', description: 'app.syllable_jump.desc', category: 'speech', icon: '/icons/syllable-jump.svg', route: '/apps/syllable-jump', ready: true },
   { id: 'picture-dictionary', name: 'app.picture_dictionary', description: 'app.picture_dictionary.desc', category: 'learning', icon: '/icons/picture-dictionary.svg', route: '/apps/picture-dictionary', ready: true },
-  { id: 'focus-buddy', name: 'app.focus_buddy', description: 'app.focus_buddy.desc', category: 'time', icon: '/icons/focus-buddy.svg', route: '/apps/focus-buddy', ready: true },
   { id: 'math-aid', name: 'app.math_aid', description: 'app.math_aid.desc', category: 'learning', icon: '/icons/math-aid.svg', route: '/apps/math-aid', ready: true },
   { id: 'counting', name: 'app.counting', description: 'app.counting.desc', category: 'learning', icon: '/icons/counting.svg', route: '/apps/counting', ready: true },
   { id: 'money-check', name: 'app.money_check', description: 'app.money_check.desc', category: 'learning', icon: '/icons/money-check.svg', route: '/apps/money-check', ready: true },

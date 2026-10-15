@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,10 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const ROUTINES = [
+  type RoutineStep = { icon: string; key: string };
+  type Routine = { id: string; icon: string; steps: RoutineStep[] };
+
+  const ROUTINES: Routine[] = [
     { id: 'morning', icon: '🌅', steps: [
       { icon: '⏰', key: 'routineBuddy.wake' },
       { icon: '🚽', key: 'routineBuddy.toilet' },
@@ -36,20 +39,20 @@
     ]},
   ];
 
-  let routine = $state(null);
+  let routine = $state<Routine | null>(null);
   let step = $state(0);
-  let done = $state([]);
+  let done = $state<boolean[]>([]);
 
-  function start(r) {
+  function start(r: Routine) {
     routine = r;
     step = 0;
     done = r.steps.map(() => false);
     speak($t(`routineBuddy.routine.${r.id}`));
   }
 
-  function toggleStep(i) {
+  function toggleStep(i: number) {
     done = done.map((v, idx) => idx === i ? !v : v);
-    if (done[i]) speak(`${$t(routine.steps[i].key)} ✅`);
+    if (done[i] && routine) speak(`${$t(routine.steps[i].key)} ✅`);
     if (done.every(Boolean)) speak($t('routineBuddy.allDone'));
   }
 </script>
@@ -75,7 +78,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if routine}
       <h2>{routine.icon} {$t(`routineBuddy.routine.${routine.id}`)}</h2>
       <div class="steps">
         {#each routine.steps as s, i}

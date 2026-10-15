@@ -1,28 +1,30 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade, scale } from 'svelte/transition';
-  import { createEventDispatcher } from 'svelte';
   import CelebrationOverlay from './CelebrationOverlay.svelte';
 
   let { playSound, oncomplete } = $props();
 
   const COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63'];
 
-  let gameState = $state('idle'); // idle | showing | input | done
+  type GameState = 'idle' | 'showing' | 'input' | 'done';
+  type PatternCell = { pos: number; color: string };
+
+  let gameState = $state<GameState>('idle');
   let gridSize = $state(3);
-  let pattern = $state([]);
-  let userPattern = $state([]);
+  let pattern = $state<PatternCell[]>([]);
+  let userPattern = $state<PatternCell[]>([]);
   let level = $state(1);
   let score = $state(0);
   let showTimer = $state(0);
-  let showInterval = null;
+  let showInterval: ReturnType<typeof setInterval> | null = null;
 
-  function generatePattern() {
+  function generatePattern(): PatternCell[] {
     const count = Math.min(gridSize + level, gridSize * gridSize);
-    const cells = [];
-    const used = new Set();
+    const cells: PatternCell[] = [];
+    const used = new Set<number>();
     for (let i = 0; i < count; i++) {
-      let pos;
+      let pos: number;
       do {
         pos = Math.floor(Math.random() * gridSize * gridSize);
       } while (used.has(pos));
@@ -50,13 +52,14 @@
     showInterval = setInterval(() => {
       showTimer--;
       if (showTimer <= 0) {
-        clearInterval(showInterval);
+        if (showInterval !== null) clearInterval(showInterval);
+        showInterval = null;
         gameState = 'input';
       }
     }, 1000);
   }
 
-  function tapCell(pos) {
+  function tapCell(pos: number) {
     if (gameState !== 'input') return;
 
     // Check if this cell is already tapped
@@ -84,18 +87,20 @@
   }
 
   function endGame() {
-    clearInterval(showInterval);
+    if (showInterval !== null) clearInterval(showInterval);
+    showInterval = null;
     gameState = 'done';
     const stars = score >= 20 ? 3 : score >= 10 ? 2 : score >= 3 ? 1 : 0;
     oncomplete?.({ detail: { exerciseId: 'pattern', stars, score } });
   }
 
   function reset() {
-    clearInterval(showInterval);
+    if (showInterval !== null) clearInterval(showInterval);
+    showInterval = null;
     gameState = 'idle';
   }
 
-  function getCellColor(pos) {
+  function getCellColor(pos: number) {
     if (gameState === 'showing') {
       const p = pattern.find(c => c.pos === pos);
       return p ? p.color : 'transparent';
@@ -107,7 +112,7 @@
     return 'transparent';
   }
 
-  function isCellFilled(pos) {
+  function isCellFilled(pos: number) {
     if (gameState === 'showing') return pattern.some(c => c.pos === pos);
     if (gameState === 'input') return userPattern.some(c => c.pos === pos);
     return false;
@@ -140,6 +145,7 @@
             style="background-color: {getCellColor(pos) || '#f5f5f5'}"
             onclick={() => tapCell(pos)}
             disabled={gameState === 'showing'}
+            aria-label={$t('fineMotor.pattern.cell', { position: String(pos + 1) })}
             in:scale={{ duration: 200, delay: pos * 20 }}
           ></button>
         {/each}

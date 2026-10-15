@@ -1,12 +1,20 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade } from 'svelte/transition';
-  import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import CelebrationOverlay from './CelebrationOverlay.svelte';
 
-  let { playSound, oncomplete } = $props();
+  type PathShape = { id: string; label: string; d: string; difficulty: number };
+  type TracePoint = { x: number; y: number };
+  type GameState = 'idle' | 'tracing' | 'done';
+  type Completion = { detail: { exerciseId: string; stars: number; score: number } };
+  interface Props {
+    playSound: (sound: 'success' | 'error') => void;
+    oncomplete?: (completion: Completion) => void;
+  }
 
-  const PATHS = [
+  let { playSound, oncomplete }: Props = $props();
+
+  const PATHS: PathShape[] = [
     { id: 'line-h', label: 'fineMotor.tracing.lineH', d: 'M 50,200 L 350,200', difficulty: 1 },
     { id: 'line-v', label: 'fineMotor.tracing.lineV', d: 'M 200,50 L 200,350', difficulty: 1 },
     { id: 'line-d', label: 'fineMotor.tracing.lineD', d: 'M 50,50 L 350,350', difficulty: 1 },
@@ -19,14 +27,14 @@
     { id: 'zigzag', label: 'fineMotor.tracing.zigzag', d: 'M 50,300 L 110,100 L 170,300 L 230,100 L 290,300 L 350,100', difficulty: 2 },
   ];
 
-  let gameState = $state('idle'); // idle | tracing | done
+  let gameState = $state<GameState>('idle');
   let currentPathIdx = $state(0);
-  let tracePoints = $state([]);
+  let tracePoints = $state<TracePoint[]>([]);
   let isDrawing = $state(false);
   let accuracy = $state(0);
-  let canvasEl;
-  let svgEl;
-  let ctx;
+  let canvasEl = $state<HTMLCanvasElement | undefined>(undefined);
+  let svgEl = $state<SVGSVGElement | undefined>(undefined);
+  let ctx = $state<CanvasRenderingContext2D | null>(null);
 
   let currentPath = $derived(PATHS[currentPathIdx]);
 
@@ -47,29 +55,31 @@
     });
   }
 
-  function getPos(e) {
+  function getPos(e: TouchEvent | MouseEvent): TracePoint {
+    if (!canvasEl) return { x: 0, y: 0 };
     const rect = canvasEl.getBoundingClientRect();
-    const touch = e.touches?.[0] || e;
+    const point = 'touches' in e ? e.touches[0] : e;
+    if (!point) return { x: 0, y: 0 };
     const scaleX = 400 / rect.width;
     const scaleY = 400 / rect.height;
     return {
-      x: (touch.clientX - rect.left) * scaleX,
-      y: (touch.clientY - rect.top) * scaleY,
+      x: (point.clientX - rect.left) * scaleX,
+      y: (point.clientY - rect.top) * scaleY,
     };
   }
 
-  function handleStart(e) {
+  function handleStart(e: TouchEvent | MouseEvent) {
     e.preventDefault();
     isDrawing = true;
     tracePoints = [];
-    if (ctx) {
+    if (ctx && canvasEl) {
       ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     }
     const pos = getPos(e);
     tracePoints.push(pos);
   }
 
-  function handleMove(e) {
+  function handleMove(e: TouchEvent | MouseEvent) {
     if (!isDrawing) return;
     e.preventDefault();
     const pos = getPos(e);
@@ -77,7 +87,7 @@
     drawTrace();
   }
 
-  function handleEnd(e) {
+  function handleEnd(e: TouchEvent | MouseEvent) {
     if (!isDrawing) return;
     e.preventDefault();
     isDrawing = false;
@@ -85,10 +95,8 @@
   }
 
   function drawTrace() {
-    if (!ctx || tracePoints.length < 2) return;
+    if (!ctx || !canvasEl || tracePoints.length < 2) return;
     const rect = canvasEl.getBoundingClientRect();
-    const scaleX = rect.width / 400;
-    const scaleY = rect.height / 400;
     ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     ctx.beginPath();
     ctx.strokeStyle = '#4caf50';
@@ -108,7 +116,7 @@
       return;
     }
     // Sample points along the SVG path and measure average distance
-    const pathEl = svgEl?.querySelector('.target-path');
+    const pathEl = svgEl?.querySelector<SVGPathElement>('.target-path');
     if (!pathEl) { accuracy = 50; finishPath(); return; }
 
     const pathLen = pathEl.getTotalLength();

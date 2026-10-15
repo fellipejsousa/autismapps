@@ -1,7 +1,24 @@
 import { writable, derived, get } from 'svelte/store';
 import en from './messages/en.json';
 
-const translations: Record<string, Record<string, string>> = { en };
+type TranslationCatalog = Record<string, string>;
+
+function flattenCatalog(value: unknown, prefix = '', result: TranslationCatalog = {}): TranslationCatalog {
+  if (typeof value === 'string') {
+    if (prefix) result[prefix] = value;
+    return result;
+  }
+
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    for (const [key, nestedValue] of Object.entries(value)) {
+      flattenCatalog(nestedValue, prefix ? `${prefix}.${key}` : key, result);
+    }
+  }
+
+  return result;
+}
+
+const translations: Record<string, TranslationCatalog> = { en: flattenCatalog(en) };
 const loadedLocales = new Set(['en']);
 
 export const locale = writable('en');
@@ -11,7 +28,7 @@ export async function loadLocale(lang: string) {
   if (loadedLocales.has(lang)) return;
   try {
     const mod = await import(`./messages/${lang}.json`);
-    translations[lang] = mod.default;
+    translations[lang] = flattenCatalog(mod.default);
     loadedLocales.add(lang);
   } catch {
     console.warn(`Locale ${lang} not found, falling back to ${fallbackLocale}`);
@@ -19,7 +36,11 @@ export async function loadLocale(lang: string) {
 }
 
 export function setLocale(lang: string) {
-  loadLocale(lang).then(() => locale.set(lang));
+  const selectedLanguage = lang.toLowerCase().startsWith('sv') ? 'sv' : 'en';
+  loadLocale(selectedLanguage).then(() => {
+    locale.set(selectedLanguage);
+    if (typeof document !== 'undefined') document.documentElement.lang = selectedLanguage;
+  });
 }
 
 export const t = derived(locale, ($locale) => {

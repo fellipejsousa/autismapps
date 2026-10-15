@@ -1,9 +1,10 @@
 # Autismappar 🧩
 
-**SvelteKit PWA with 42 AAC/TEACCH apps for children with neurodevelopmental conditions (NPF), intellectual disabilities (IF) and verbal dyspraxia**
+**SvelteKit PWA with 72 AAC and learning tools for children with neurodevelopmental conditions (NPF), intellectual disabilities (IF) and verbal dyspraxia**
 
 🌐 **Live:** [yeager.github.io/autismapps](https://yeager.github.io/autismapps/)  
 🇸🇪 **Swedish name:** Autismappar (NPF-appar)
+🇬🇧 **English name:** Autismapps ([autismapps.online](https://autismapps.online/))
 📄 **License:** CC BY-NC-SA 4.0
 
 ---
@@ -14,15 +15,17 @@ A free, open-source collection of evidence-based apps designed for children with
 
 ### Design Principles
 
-- **Professional AAC quality** — Apple + IKEA aesthetic, not childish
-- **Evidence-based** — AAC, TEACCH, LAMP, PECS, DTTC, Fitzgerald Key
+- **Calm and consistent** — clear typography, steady layouts, and large touch targets
+- **Grounded in established approaches** — AAC, TEACCH, PECS, DTTC, and Fitzgerald Key
 - **Accessible** — 48px touch targets, high contrast, `prefers-reduced-motion`
 - **Multimodal** — Image + text + TTS on every interaction
 - **LAMP positioning** — Buttons never change position across sessions
 - **Core vocabulary** — ~200-400 words covering 80% of communication
-- **Free forever** — No cost, no ads, no tracking, open source
+- **Free to use** — No ads or account required; preferences stay on the device. External services may process technical request data.
 
-## Apps (42)
+## Featured tools
+
+The launcher currently contains **72 tools** across eight categories. The lists below highlight core workflows; the live catalogue in the app registry is the source of truth for the complete set.
 
 ### Communication (AAC)
 | App | Description |
@@ -102,10 +105,9 @@ A free, open-source collection of evidence-based apps designed for children with
 
 ## i18n
 
-- **1105 translation keys**
-- **Swedish (sv):** 100% ✅
-- **10 more languages** available on [Transifex](https://app.transifex.com/danielnylander/autismapps/)
-- da, de, es, fi, fr, it, nb_NO, nl, pl, pt_BR
+- **Swedish (sv) and English (en):** 3,366 strings in each source catalog
+- The app name, page language, share metadata, and installable PWA manifest follow the selected language: Autismappar in Swedish and Autismapps in English
+- Additional translation work is managed through [Transifex](https://app.transifex.com/danielnylander/autismapps/)
 
 ## Development
 
@@ -114,11 +116,17 @@ npm install
 npm run dev -- --host --port 5225
 ```
 
-Build:
+Build for GitHub Pages:
 ```bash
 npm run build    # Output in build/
 npm run preview  # Preview built site
 ```
+
+Build for the launcher hosted at `autismappar.se/launcher/` and `autismapps.online/launcher/`:
+```bash
+npm run build:launcher
+```
+Upload the **contents** of `build/` into the website's `/launcher/` directory. This build uses `/launcher` for its assets and keeps the prerendered home page in `index.html`; `fallback.html` handles unknown routes. It also emits directory indexes for extensionless routes such as `/launcher/about` so they continue to work if the host has an older directory at that path. Keep `.htaccess` enabled for the slash behavior and cache headers.
 
 ## TTS Configuration
 

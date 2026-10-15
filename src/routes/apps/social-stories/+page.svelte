@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,10 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const STORIES = [
+  type StoryPage = { icon: string; text: string };
+  type Story = { id: string; icon: string; pages: StoryPage[] };
+
+  const STORIES: Story[] = [
     {
       id: 'school',
       icon: '🏫',
@@ -64,11 +67,11 @@
     },
   ];
 
-  let view = $state('list');
-  let story = $state(null);
+  let view = $state<'list' | 'read'>('list');
+  let story = $state<Story | null>(null);
   let page = $state(0);
 
-  function openStory(s) {
+  function openStory(s: Story) {
     story = s;
     page = 0;
     view = 'read';
@@ -76,14 +79,14 @@
   }
 
   function nextPage() {
-    if (page < story.pages.length - 1) {
+    if (story && page < story.pages.length - 1) {
       page++;
       speak($t(story.pages[page].text));
     }
   }
 
   function prevPage() {
-    if (page > 0) {
+    if (story && page > 0) {
       page--;
       speak($t(story.pages[page].text));
     }
@@ -111,7 +114,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if story}
       <div class="dots">
         {#each story.pages as _, i}
           <span class="dot" class:active={i === page} class:done={i < page}></span>
@@ -123,7 +126,7 @@
       </div>
       <div class="nav-btns">
         <button class="nav-btn" onclick={prevPage} disabled={page === 0}>◀</button>
-        <button class="nav-btn speak" onclick={() => speak($t(story.pages[page].text))}>🔊</button>
+        <button class="nav-btn speak" onclick={() => speak($t(story!.pages[page].text))}>🔊</button>
         <button class="nav-btn" onclick={nextPage} disabled={page === story.pages.length - 1}>▶</button>
       </div>
     {/if}

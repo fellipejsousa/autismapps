@@ -66,7 +66,7 @@
             {/each}
           </div>
           <span class="story-title">{$t(story.titleKey)}</span>
-          <span class="story-steps">{story.steps.length} steg</span>
+          <span class="story-steps">{$t('th.stories.stepCount', { count: String(story.steps.length) })}</span>
         </button>
       {/each}
     </div>

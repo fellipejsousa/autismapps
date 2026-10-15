@@ -162,8 +162,8 @@
     {:else if currentChain}
       <div class="chain-view">
         <div class="speed-control">
-          <label>{$t('soundChain.speed')}: {speechRate.toFixed(1)}x</label>
-          <input type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
+          <label for="sound-chain-speed">{$t('soundChain.speed')}: {speechRate.toFixed(1)}x</label>
+          <input id="sound-chain-speed" type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
         </div>
 
         <div class="progress-bar">

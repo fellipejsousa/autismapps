@@ -442,10 +442,10 @@
   <!-- ==================== BREAKDOWN VIEW ==================== -->
   {:else if currentView === 'breakdown' && currentPlan}
     <div class="breakdown-view" transition:fade>
-      <p class="view-instruction" onclick={() => speak($t('plan.breakdownInstruction'))}>
+      <button type="button" class="view-instruction" onclick={() => speak($t('plan.breakdownInstruction'))}>
         <img src={pictoUrl(PICTO.organize)} alt="" class="inline-picto" />
         {$t('plan.breakdownInstruction')}
-      </p>
+      </button>
 
       <div class="steps-list">
         {#each currentPlan.steps as step, idx (step.id)}
@@ -492,10 +492,10 @@
   <!-- ==================== TIME ESTIMATE VIEW ==================== -->
   {:else if currentView === 'time-estimate' && currentPlan}
     <div class="time-view" transition:fade>
-      <p class="view-instruction" onclick={() => speak($t('plan.timeInstruction'))}>
+      <button type="button" class="view-instruction" onclick={() => speak($t('plan.timeInstruction'))}>
         <img src={pictoUrl(PICTO.clock)} alt="" class="inline-picto" />
         {$t('plan.timeInstruction')}
-      </p>
+      </button>
 
       <div class="time-steps">
         {#each currentPlan.steps as step, idx}
@@ -506,7 +506,7 @@
             </div>
 
             <div class="time-controls">
-              <label class="time-label">{$t('plan.yourGuess')}</label>
+              <span class="time-label">{$t('plan.yourGuess')}</span>
               <div class="time-input-row">
                 <button
                   class="time-btn"
@@ -577,10 +577,10 @@
   <!-- ==================== PRIORITY VIEW ==================== -->
   {:else if currentView === 'priority' && currentPlan}
     <div class="priority-view" transition:fade>
-      <p class="view-instruction" onclick={() => speak($t('plan.priorityInstruction'))}>
+      <button type="button" class="view-instruction" onclick={() => speak($t('plan.priorityInstruction'))}>
         <img src={pictoUrl(PICTO.sort)} alt="" class="inline-picto" />
         {$t('plan.priorityInstruction')}
-      </p>
+      </button>
 
       <div class="priority-zones">
         {#each PRIORITY_ZONES as zone}
@@ -672,10 +672,10 @@
   <!-- ==================== REVIEW VIEW ==================== -->
   {:else if currentView === 'review' && currentPlan}
     <div class="review-view" transition:fade>
-      <p class="view-instruction" onclick={() => speak($t('plan.reviewInstruction'))}>
+      <button type="button" class="view-instruction" onclick={() => speak($t('plan.reviewInstruction'))}>
         <img src={pictoUrl(PICTO.think)} alt="" class="inline-picto" />
         {$t('plan.reviewInstruction')}
-      </p>
+      </button>
 
       <!-- Star rating -->
       <div class="rating-section">
@@ -794,6 +794,10 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
   }
 
   .nav-buttons {

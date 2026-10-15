@@ -202,6 +202,7 @@ export const STRATEGIES = {
 
 /**
  * Get recommended activities based on a sensory profile
+ * @param {Record<string, string>} profile
  */
 export function getRecommendedActivities(profile) {
   const recommended = [];

@@ -1,6 +1,9 @@
-<script>
+<script lang="ts">
   // TTS uses app locale automatically
   import WelcomeDialog from './WelcomeDialog.svelte';
+  import { setLocale } from '$lib/i18n';
+  import en from '$lib/i18n/messages/en.json';
+  import sv from '$lib/i18n/messages/sv.json';
   import ActivityGrid from './ActivityGrid.svelte';
   import TrafficLights from './TrafficLights.svelte';
   import Vehicles from './Vehicles.svelte';
@@ -9,38 +12,32 @@
   import SafePlaces from './SafePlaces.svelte';
   import Reflectors from './Reflectors.svelte';
   
-  let { lang = 'sv' } = $props(); // Default to Swedish
+  let { lang = $bindable<'sv' | 'en'>('sv') } = $props<{ lang?: 'sv' | 'en' }>();
+
+  const trafficSafetyTranslations: Record<'sv' | 'en', Record<string, any>> = {
+    sv: sv['traffic-safety'],
+    en: en['traffic-safety']
+  };
   
   let showWelcome = $state(true);
   let currentView = $state('grid'); // 'grid', 'traffic-lights', 'crosswalk', etc.
-  let i18nData = $state({});
-  
-  // Load i18n data based on language
-  $effect(async () => {
-    try {
-      const module = await import(`../../data/i18n-${lang}.json`);
-      i18nData = module.default['traffic-safety'] || {};
-    } catch (error) {
-      console.warn(`Failed to load i18n for ${lang}, falling back to English`);
-      try {
-        const module = await import('../../data/i18n-en.json');
-        i18nData = module.default['traffic-safety'] || {};
-      } catch (fallbackError) {
-        console.error('Failed to load any i18n data:', fallbackError);
-        i18nData = {};
-      }
-    }
+  let i18nData: Record<string, any> = $state(lang === 'sv' ? trafficSafetyTranslations.sv : trafficSafetyTranslations.en);
+
+  $effect(() => {
+    i18nData = lang === 'sv' ? trafficSafetyTranslations.sv : trafficSafetyTranslations.en;
   });
+
+  function chooseLanguage(language: 'sv' | 'en') {
+    lang = language;
+    setLocale(language);
+    if (typeof localStorage !== 'undefined') localStorage.setItem('locale', language);
+  }
   
   function handleWelcomeStart() {
     showWelcome = false;
   }
   
-  function handleWelcomeClose() {
-    showWelcome = false;
-  }
-  
-  function handleActivitySelected(event) {
+  function handleActivitySelected(event: CustomEvent<{ activity: string }>) {
     currentView = event.detail.activity;
   }
   
@@ -55,7 +52,6 @@
     i18n={i18nData}
     visible={showWelcome}
     onstart={handleWelcomeStart}
-    onclose={handleWelcomeClose}
   />
   
   <!-- Main Content -->
@@ -66,13 +62,13 @@
         <div class="language-selector">
           <button 
             class="lang-btn {lang === 'sv' ? 'active' : ''}"
-            onclick={() => lang = 'sv'}
+            onclick={() => chooseLanguage('sv')}
           >
             🇸🇪 SV
           </button>
           <button 
             class="lang-btn {lang === 'en' ? 'active' : ''}"
-            onclick={() => lang = 'en'}
+            onclick={() => chooseLanguage('en')}
           >
             🇺🇸 EN
           </button>
@@ -181,7 +177,7 @@
     font-size: max(16px, 1em);
   }
 
-  h1, h2, h3 {
+  h1 {
     font-size: max(24px, 1.5em);
   }
 

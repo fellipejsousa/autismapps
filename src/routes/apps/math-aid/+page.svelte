@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -7,16 +7,16 @@
   import { fade } from 'svelte/transition';
   import { awardStar, GoldStarBurst } from '$lib/rewards';
 
-  let mode = $state('menu'); // menu, addition, subtraction
-  let a = $state(0), b = $state(0), answer = $state(null), op = $state('+');
+  let mode = $state<'menu' | 'addition' | 'subtraction'>('menu');
+  let a = $state(0), b = $state(0), answer = $state<number | null>(null), op = $state<'+' | '-'>('+');
   let userAnswer = $state('');
-  let correct = $state(null);
+  let correct = $state<boolean | null>(null);
   let score = $state(0);
   let total = $state(0);
   let maxNum = $state(10);
   let showStar = $state(false);
 
-  function startMode(m) {
+  function startMode(m: 'addition' | 'subtraction') {
     mode = m;
     op = m === 'addition' ? '+' : '-';
     score = 0; total = 0;
@@ -50,7 +50,7 @@
     }
   }
 
-  function tapNum(n) {
+  function tapNum(n: number) {
     if (correct === true) return;
     userAnswer += String(n);
   }

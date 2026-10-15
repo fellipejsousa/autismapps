@@ -174,8 +174,8 @@
     {:else if currentItem}
       <div class="practice-view">
         <div class="speed-control">
-          <label>{$t('speechPractice.speed')}: {speechRate.toFixed(1)}x</label>
-          <input type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
+          <label for="speech-practice-speed">{$t('speechPractice.speed')}: {speechRate.toFixed(1)}x</label>
+          <input id="speech-practice-speed" type="range" min="0.4" max="1.0" step="0.1" bind:value={speechRate} />
         </div>
 
         <!-- Item navigation -->

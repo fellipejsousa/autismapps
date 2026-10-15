@@ -38,7 +38,7 @@
   }: Props = $props();
 
   const imgUrl = $derived(getArasaacUrl(step.arasaacId));
-  const lang = $derived($locale);
+  const lang = $derived($locale === 'sv' ? 'sv' : 'en');
   const description = $derived(step.description[lang] || step.description.en);
 
   function handleTap() {

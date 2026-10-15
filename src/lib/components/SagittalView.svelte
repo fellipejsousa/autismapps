@@ -1,10 +1,9 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
+  import type { TonguePosition } from '$lib/data/tongue-positions';
 
-  /** @type {import('$lib/data/tongue-positions').TonguePosition | null} */
-  export let position = null;
-  /** @type {import('$lib/data/tongue-positions').TonguePosition | null} */
-  export let targetPosition = null;
+  export let position: TonguePosition | null = null;
+  export let targetPosition: TonguePosition | null = null;
   /** Show airflow animation */
   export let showAirflow = false;
   /** Dark background mode */
@@ -15,9 +14,11 @@
   // Default neutral rest position
   const REST = {
     tip: [0.35, 0.55], body: [0.48, 0.42], root: [0.68, 0.48],
-    velum: 'closed', lips: 'neutral', voiced: false,
-  };
+    velum: 'closed', lips: 'neutral', voiced: false, label: 'Neutral', ipa: 'ə', example: '',
+  } satisfies TonguePosition;
 
+  let pos: TonguePosition;
+  let target: TonguePosition | null;
   $: pos = position || REST;
   $: target = targetPosition;
 
@@ -29,7 +30,7 @@
   // The oral cavity occupies roughly the center of the SVG
   // X: 60-340 (front=lips to back=pharynx)
   // Y: 60-340 (top=palate to bottom=floor)
-  function toSVG(nx, ny) {
+  function toSVG(nx: number, ny: number): [number, number] {
     return [60 + nx * 280, 60 + ny * 280];
   }
 
@@ -39,7 +40,7 @@
   const palatePath = 'M 95,120 C 110,70 200,50 260,80';
 
   // Soft palate (velum) — from palate end, curves down toward pharynx
-  function velumPath(state) {
+  function velumPath(state: TonguePosition['velum']) {
     if (state === 'open') {
       // Open = lowered, allowing nasal airflow
       return 'M 260,80 C 280,90 300,120 310,160';
@@ -65,7 +66,7 @@
   const larynxY = 340;
 
   // ─── LIP SHAPES ───
-  function upperLipPath(lipShape) {
+  function upperLipPath(lipShape: TonguePosition['lips']) {
     switch (lipShape) {
       case 'open-wide': return 'M 60,160 C 55,145 50,130 55,115 C 58,108 65,105 72,110 L 82,120';
       case 'open': return 'M 60,155 C 55,145 52,132 58,120 C 62,114 68,112 74,116 L 82,122';
@@ -76,7 +77,7 @@
     }
   }
 
-  function lowerLipPath(lipShape) {
+  function lowerLipPath(lipShape: TonguePosition['lips']) {
     switch (lipShape) {
       case 'open-wide': return 'M 60,160 C 55,185 52,210 58,230 C 62,238 68,240 74,235 L 82,250';
       case 'open': return 'M 60,155 C 57,175 55,200 58,220 C 62,228 68,228 74,222 L 82,240';
@@ -89,7 +90,7 @@
 
   // ─── TONGUE CURVE ───
   // Build a smooth bezier path through tip, body, and root
-  function tonguePath(tp) {
+  function tonguePath(tp: TonguePosition) {
     const [tipX, tipY] = toSVG(tp.tip[0], tp.tip[1]);
     const [bodyX, bodyY] = toSVG(tp.body[0], tp.body[1]);
     const [rootX, rootY] = toSVG(tp.root[0], tp.root[1]);
@@ -108,7 +109,7 @@
   }
 
   // Tongue surface line (the visible top edge) for cleaner rendering
-  function tongueSurfacePath(tp) {
+  function tongueSurfacePath(tp: TonguePosition) {
     const [tipX, tipY] = toSVG(tp.tip[0], tp.tip[1]);
     const [bodyX, bodyY] = toSVG(tp.body[0], tp.body[1]);
     const [rootX, rootY] = toSVG(tp.root[0], tp.root[1]);
@@ -119,7 +120,7 @@
   }
 
   // ─── CONTACT POINT INDICATOR ───
-  function contactPoint(tp) {
+  function contactPoint(tp: TonguePosition) {
     if (!tp.contact) return null;
     switch (tp.contact) {
       case 'alveolar': return { cx: 105, cy: 115, label: 'Alveolär' };
@@ -134,11 +135,11 @@
   }
 
   // ─── AIRFLOW ARROWS ───
-  function airflowParticles(tp) {
+  function airflowParticles(tp: TonguePosition): { x: number; y: number; delay: number }[] {
     if (!tp.airflow && !showAirflow) return [];
     const [tipX, tipY] = toSVG(tp.tip[0], tp.tip[1]);
     // Particles flowing from throat toward lips
-    const particles = [];
+    const particles: { x: number; y: number; delay: number }[] = [];
     for (let i = 0; i < 5; i++) {
       const t = i / 4;
       particles.push({

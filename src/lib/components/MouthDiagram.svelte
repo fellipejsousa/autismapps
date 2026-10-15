@@ -5,7 +5,7 @@
   Active articulators highlighted in color.
 -->
 <script>
-  /** @type {import('$lib/data/mouth-sounds').sounds[0] | null} */
+  /** @type {(typeof import('$lib/data/mouth-sounds').sounds)[number] | null} */
   export let sound = null;
 
   // Derive positions from sound data with smooth defaults

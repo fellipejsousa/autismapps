@@ -156,7 +156,4 @@
     display: flex;
     flex-direction: column;
   }
-  .app-main.has-header {
-    /* padding handled by individual pages */
-  }
 </style>

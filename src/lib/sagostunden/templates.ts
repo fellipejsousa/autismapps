@@ -7,6 +7,7 @@
 export interface StoryTemplate {
   id: string;
   title: string;
+  titleEn: string;
   titleKey: string;
   paragraphs: Record<string, string[]>;
   slots: string[];
@@ -16,6 +17,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'adventure-forest',
     title: 'Äventyret i skogen',
+    titleEn: 'An Adventure in the Forest',
     titleKey: 'sagostunden.story.adventure_forest',
     slots: ['DJUR', 'PLATS', 'SAK', 'VERB'],
     paragraphs: {
@@ -38,6 +40,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'hungry-tale',
     title: 'Den hungriga berättelsen',
+    titleEn: 'The Hungry Story',
     titleKey: 'sagostunden.story.hungry_tale',
     slots: ['DJUR', 'MAT', 'PLATS', 'PERSON'],
     paragraphs: {
@@ -60,6 +63,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'magic-item',
     title: 'Den magiska saken',
+    titleEn: 'The Magic Thing',
     titleKey: 'sagostunden.story.magic_item',
     slots: ['PERSON', 'SAK', 'DJUR', 'VERB'],
     paragraphs: {
@@ -82,6 +86,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'new-friend',
     title: 'En ny kompis',
+    titleEn: 'A New Friend',
     titleKey: 'sagostunden.story.new_friend',
     slots: ['DJUR', 'PERSON', 'PLATS', 'VERB'],
     paragraphs: {
@@ -104,6 +109,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'birthday-party',
     title: 'Födelsedagsfesten',
+    titleEn: 'The Birthday Party',
     titleKey: 'sagostunden.story.birthday_party',
     slots: ['PERSON', 'DJUR', 'MAT', 'SAK'],
     paragraphs: {
@@ -126,6 +132,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'lost-treasure',
     title: 'Den försvunna skatten',
+    titleEn: 'The Missing Treasure',
     titleKey: 'sagostunden.story.lost_treasure',
     slots: ['PERSON', 'SAK', 'PLATS', 'DJUR'],
     paragraphs: {
@@ -148,6 +155,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'rainy-day',
     title: 'En regnig dag',
+    titleEn: 'A Rainy Day',
     titleKey: 'sagostunden.story.rainy_day',
     slots: ['DJUR', 'SAK', 'VERB', 'PLATS'],
     paragraphs: {
@@ -170,6 +178,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'dream-journey',
     title: 'Drömresan',
+    titleEn: 'The Dream Journey',
     titleKey: 'sagostunden.story.dream_journey',
     slots: ['PERSON', 'PLATS', 'DJUR', 'SAK'],
     paragraphs: {
@@ -192,6 +201,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'cooking-together',
     title: 'Vi lagar mat',
+    titleEn: 'Let’s Cook Together',
     titleKey: 'sagostunden.story.cooking_together',
     slots: ['PERSON', 'DJUR', 'MAT', 'SAK'],
     paragraphs: {
@@ -214,6 +224,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'space-adventure',
     title: 'Rymdäventyret',
+    titleEn: 'The Space Adventure',
     titleKey: 'sagostunden.story.space_adventure',
     slots: ['PERSON', 'DJUR', 'SAK', 'PLATS'],
     paragraphs: {
@@ -236,6 +247,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'hide-and-seek',
     title: 'Kurragömma',
+    titleEn: 'Hide-and-Seek',
     titleKey: 'sagostunden.story.hide_and_seek',
     slots: ['DJUR', 'PERSON', 'PLATS', 'SAK'],
     paragraphs: {
@@ -258,6 +270,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'music-show',
     title: 'Musikshowen',
+    titleEn: 'The Music Show',
     titleKey: 'sagostunden.story.music_show',
     slots: ['PERSON', 'DJUR', 'SAK', 'VERB'],
     paragraphs: {
@@ -280,6 +293,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'garden-surprise',
     title: 'Överraskningen i trädgården',
+    titleEn: 'The Garden Surprise',
     titleKey: 'sagostunden.story.garden_surprise',
     slots: ['PERSON', 'DJUR', 'SAK', 'MAT'],
     paragraphs: {
@@ -302,6 +316,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'winter-fun',
     title: 'Vinterskoj',
+    titleEn: 'Winter Fun',
     titleKey: 'sagostunden.story.winter_fun',
     slots: ['DJUR', 'PERSON', 'SAK', 'VERB'],
     paragraphs: {
@@ -324,6 +339,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'rescue-mission',
     title: 'Räddningsuppdraget',
+    titleEn: 'The Rescue Mission',
     titleKey: 'sagostunden.story.rescue_mission',
     slots: ['PERSON', 'DJUR', 'PLATS', 'SAK'],
     paragraphs: {
@@ -346,6 +362,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'painting-day',
     title: 'Målardag',
+    titleEn: 'Painting Day',
     titleKey: 'sagostunden.story.painting_day',
     slots: ['PERSON', 'DJUR', 'SAK', 'PLATS'],
     paragraphs: {
@@ -368,6 +385,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'magic-garden',
     title: 'Den magiska trädgården',
+    titleEn: 'The Magic Garden',
     titleKey: 'sagostunden.story.magic_garden',
     slots: ['PERSON', 'DJUR', 'MAT', 'SAK'],
     paragraphs: {
@@ -390,6 +408,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'bedtime',
     title: 'Godnatt',
+    titleEn: 'Goodnight',
     titleKey: 'sagostunden.story.bedtime',
     slots: ['DJUR', 'SAK', 'PERSON', 'PLATS'],
     paragraphs: {
@@ -412,6 +431,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'circus-show',
     title: 'Cirkusföreställningen',
+    titleEn: 'The Circus Show',
     titleKey: 'sagostunden.story.circus_show',
     slots: ['DJUR', 'PERSON', 'SAK', 'VERB'],
     paragraphs: {
@@ -434,6 +454,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'boat-trip',
     title: 'Båtresan',
+    titleEn: 'The Boat Trip',
     titleKey: 'sagostunden.story.boat_trip',
     slots: ['PERSON', 'DJUR', 'PLATS', 'MAT'],
     paragraphs: {
@@ -456,6 +477,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'playground',
     title: 'På lekplatsen',
+    titleEn: 'At the Playground',
     titleKey: 'sagostunden.story.playground',
     slots: ['DJUR', 'PERSON', 'SAK', 'VERB'],
     paragraphs: {
@@ -478,6 +500,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'library-visit',
     title: 'Besöket på biblioteket',
+    titleEn: 'A Visit to the Library',
     titleKey: 'sagostunden.story.library_visit',
     slots: ['PERSON', 'DJUR', 'SAK', 'PLATS'],
     paragraphs: {
@@ -500,6 +523,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'superhero',
     title: 'Superhjälten',
+    titleEn: 'The Superhero',
     titleKey: 'sagostunden.story.superhero',
     slots: ['PERSON', 'SAK', 'DJUR', 'PLATS'],
     paragraphs: {
@@ -522,6 +546,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'market-day',
     title: 'Marknadsdagen',
+    titleEn: 'Market Day',
     titleKey: 'sagostunden.story.market_day',
     slots: ['PERSON', 'DJUR', 'MAT', 'SAK'],
     paragraphs: {
@@ -544,6 +569,7 @@ export const TEMPLATES: StoryTemplate[] = [
   {
     id: 'night-sky',
     title: 'Nattens himmel',
+    titleEn: 'The Night Sky',
     titleKey: 'sagostunden.story.night_sky',
     slots: ['PERSON', 'DJUR', 'SAK', 'PLATS'],
     paragraphs: {

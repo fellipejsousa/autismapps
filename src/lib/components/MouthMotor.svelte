@@ -3,7 +3,7 @@
   Sound grid → tap sound → see sagittal + front view + ARASAAC pictogram + TTS.
   Also includes sound pair comparison mode.
 -->
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { speak, stop } from '$lib/tts';
   import { fade, fly } from 'svelte/transition';
@@ -11,25 +11,26 @@
   import LipView from './LipView.svelte';
   import { sounds, SOUND_TYPES, SOUND_PAIRS, getSound, getSoundsByType } from '$lib/data/mouth-sounds';
 
-  /** @type {'grid' | 'detail' | 'compare'} */
-  let view = $state('grid');
+  type MouthSound = (typeof sounds)[number];
+  type SoundPair = (typeof SOUND_PAIRS)[number];
+  type View = 'grid' | 'detail' | 'compare';
 
-  /** @type {import('$lib/data/mouth-sounds').sounds[0] | null} */
-  let selectedSound = $state(null);
+  let view = $state<View>('grid');
 
-  /** @type {{ a: import('$lib/data/mouth-sounds').sounds[0], b: import('$lib/data/mouth-sounds').sounds[0], contrastKey: string } | null} */
-  let selectedPair = $state(null);
+  let selectedSound = $state<MouthSound | null>(null);
+
+  let selectedPair = $state<{ a: MouthSound; b: MouthSound; contrastKey: string } | null>(null);
 
   /** Whether to show sound pairs section */
   let showPairs = $state(false);
 
-  function selectSound(sound) {
+  function selectSound(sound: MouthSound) {
     selectedSound = sound;
     view = 'detail';
     playSound(sound);
   }
 
-  function playSound(sound) {
+  function playSound(sound: MouthSound) {
     // Speak the sound itself, then example word
     const text = sound.symbol === sound.id
       ? `${sound.symbol}. ${sound.exampleWord}.`
@@ -37,11 +38,11 @@
     speak(text, { rate: 0.2 });
   }
 
-  function playSoundOnly(sound) {
+  function playSoundOnly(sound: MouthSound) {
     speak(sound.symbol, { rate: 0.15 });
   }
 
-  function selectPair(pair) {
+  function selectPair(pair: SoundPair) {
     const a = getSound(pair.a);
     const b = getSound(pair.b);
     if (a && b) {
@@ -60,12 +61,12 @@
   }
 
   // Airflow description key
-  function airflowKey(af) {
+  function airflowKey(af: string) {
     return `mouthMotor.airflow.${af}`;
   }
 
   // ARASAAC URL
-  function arasaacUrl(id) {
+  function arasaacUrl(id: number) {
     return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
   }
 </script>
@@ -123,7 +124,7 @@
     <div class="detail-header">
       <span class="detail-symbol">{selectedSound.symbol}</span>
       <span class="detail-ipa">/{selectedSound.ipa}/</span>
-      <button class="play-btn" onclick={() => playSoundOnly(selectedSound)} aria-label="Play sound">
+      <button class="play-btn" onclick={() => selectedSound && playSoundOnly(selectedSound)} aria-label="Play sound">
         🔊
       </button>
     </div>
@@ -174,10 +175,10 @@
       <div class="example-card">
         <img src={arasaacUrl(selectedSound.exampleArasaac)} alt={selectedSound.exampleWord}
           class="arasaac-img" loading="lazy"
-          onerror={(e) => e.target.style.display='none'} />
+          onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
         <div class="example-text">
           <span class="example-word">{selectedSound.exampleWord}</span>
-          <button class="play-word-btn" onclick={() => speak(selectedSound.exampleWord, { rate: 0.2 })}>
+          <button class="play-word-btn" onclick={() => selectedSound && speak(selectedSound.exampleWord, { rate: 0.2 })}>
             🔊 {$t('mouthMotor.listen')}
           </button>
         </div>
@@ -197,7 +198,7 @@
     <div class="compare-columns">
       <!-- Sound A -->
       <div class="compare-col">
-        <button class="compare-sound-btn" onclick={() => playSoundOnly(selectedPair.a)}>
+        <button class="compare-sound-btn" onclick={() => selectedPair && playSoundOnly(selectedPair.a)}>
           <span class="compare-symbol">{selectedPair.a.symbol}</span>
           <span class="compare-ipa">/{selectedPair.a.ipa}/</span>
           🔊
@@ -211,7 +212,7 @@
         </div>
         <div class="compare-example">
           <img src={arasaacUrl(selectedPair.a.exampleArasaac)} alt={selectedPair.a.exampleWord}
-            class="arasaac-img-sm" loading="lazy" onerror={(e) => e.target.style.display='none'} />
+            class="arasaac-img-sm" loading="lazy" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <span>{selectedPair.a.exampleWord}</span>
         </div>
       </div>
@@ -223,7 +224,7 @@
 
       <!-- Sound B -->
       <div class="compare-col">
-        <button class="compare-sound-btn" onclick={() => playSoundOnly(selectedPair.b)}>
+        <button class="compare-sound-btn" onclick={() => selectedPair && playSoundOnly(selectedPair.b)}>
           <span class="compare-symbol">{selectedPair.b.symbol}</span>
           <span class="compare-ipa">/{selectedPair.b.ipa}/</span>
           🔊
@@ -237,7 +238,7 @@
         </div>
         <div class="compare-example">
           <img src={arasaacUrl(selectedPair.b.exampleArasaac)} alt={selectedPair.b.exampleWord}
-            class="arasaac-img-sm" loading="lazy" onerror={(e) => e.target.style.display='none'} />
+            class="arasaac-img-sm" loading="lazy" onerror={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
           <span>{selectedPair.b.exampleWord}</span>
         </div>
       </div>

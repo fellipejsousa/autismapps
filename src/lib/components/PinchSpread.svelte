@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade } from 'svelte/transition';
-  import { createEventDispatcher, onMount } from 'svelte';
   import CelebrationOverlay from './CelebrationOverlay.svelte';
 
-  let { playSound, oncomplete } = $props();
+  let { playSound, oncomplete } = $props<{
+    playSound: (sound: 'error' | 'tap' | 'success') => void;
+    oncomplete?: (event: { detail: { exerciseId: string; stars: number; score: number } }) => void;
+  }>();
 
   const IMAGES = [
     { emoji: '🌻', targetScale: 2.0, label: 'fineMotor.pinch.zoomIn' },
@@ -15,14 +17,12 @@
     { emoji: '⭐', targetScale: 0.4, label: 'fineMotor.pinch.zoomOut' },
   ];
 
-  let gameState = $state('idle');
+  let gameState = $state<'idle' | 'playing' | 'done'>('idle');
   let currentIdx = $state(0);
   let currentScale = $state(1);
   let completed = $state(0);
-  let touches = $state([]);
   let initialDistance = $state(0);
   let initialScale = $state(1);
-  let containerEl;
 
   let current = $derived(IMAGES[currentIdx]);
   let progress = $derived(Math.abs(currentScale - 1) / Math.abs(current.targetScale - 1) * 100);
@@ -39,7 +39,7 @@
     completed = 0;
   }
 
-  function handleTouchStart(e) {
+  function handleTouchStart(e: TouchEvent) {
     if (gameState !== 'playing') return;
     if (e.touches.length === 2) {
       e.preventDefault();
@@ -50,20 +50,21 @@
     }
   }
 
-  function handleTouchMove(e) {
+  function handleTouchMove(e: TouchEvent) {
     if (gameState !== 'playing') return;
     if (e.touches.length === 2) {
       e.preventDefault();
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
+      if (initialDistance <= 0) return;
       const scaleFactor = dist / initialDistance;
       currentScale = Math.max(0.2, Math.min(4, initialScale * scaleFactor));
       checkCompletion();
     }
   }
 
-  function handleWheel(e) {
+  function handleWheel(e: WheelEvent) {
     if (gameState !== 'playing') return;
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.95 : 1.05;
@@ -120,7 +121,6 @@
     </div>
     <div
       class="pinch-area"
-      bind:this={containerEl}
       ontouchstart={handleTouchStart}
       ontouchmove={handleTouchMove}
       onwheel={handleWheel}

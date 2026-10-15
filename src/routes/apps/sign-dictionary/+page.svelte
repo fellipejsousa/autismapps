@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -9,8 +9,12 @@
 
   const BASE = 'https://teckensprakslexikon.su.se';
 
+  type Word = { sv: string; en: string; id: string; vf?: string };
+  type Category = { id: string; icon: string; color: string; words: Word[] };
+  type View = 'categories' | 'words' | 'detail' | 'search';
+
   // Core vocabulary organized by category (Fitzgerald Key colors)
-  const CATEGORIES = [
+  const CATEGORIES: Category[] = [
     {
       id: 'people',
       icon: '👤',
@@ -86,35 +90,35 @@
     }
   ];
 
-  let view = $state('categories'); // 'categories' | 'words' | 'detail' | 'search'
-  let selectedCategory = $state(null);
-  let selectedWord = $state(null);
+  let view = $state<View>('categories');
+  let selectedCategory = $state<Category | null>(null);
+  let selectedWord = $state<Word | null>(null);
   let searchQuery = $state('');
-  let searchResults = $state([]);
+  let searchResults = $state<Word[]>([]);
   let searching = $state(false);
   let videoError = $state(false);
 
-  function getVideoUrl(id, vf) {
+  function getVideoUrl(id: string, vf: string) {
     const prefix = id.substring(0, 2);
     return `${BASE}/movies/${prefix}/${vf}-${id}-tecken.mp4`;
   }
 
-  function getPhotoUrl(id, word) {
+  function getPhotoUrl(id: string, word: string) {
     const prefix = id.substring(0, 2);
     return `${BASE}/photos/${prefix}/${word}-${id}-photo-1-medium.jpg`;
   }
 
-  function selectCategory(cat) {
+  function selectCategory(cat: Category) {
     selectedCategory = cat;
     view = 'words';
   }
 
-  function wordText(word) {
+  function wordText(word: Word) {
     const lang = get(locale);
     return lang === 'sv' ? word.sv : word.en;
   }
 
-  function selectWord(word) {
+  function selectWord(word: Word) {
     selectedWord = word;
     videoError = false;
     view = 'detail';
@@ -156,7 +160,7 @@
     searching = false;
   }
 
-  function openExternal(id) {
+  function openExternal(id: string) {
     window.open(`${BASE}/ord/${id}`, '_blank');
   }
 </script>
@@ -217,7 +221,7 @@
         </div>
       {/if}
 
-    {:else if view === 'words'}
+    {:else if view === 'words' && selectedCategory}
       <h2>{selectedCategory.icon} {$t(`signDictionary.cat.${selectedCategory.id}`)}</h2>
       <div class="word-grid">
         {#each selectedCategory.words as word}
@@ -232,7 +236,7 @@
         {/each}
       </div>
 
-    {:else if view === 'detail'}
+    {:else if view === 'detail' && selectedWord}
       <div class="detail-view">
         <h2 class="detail-word">{wordText(selectedWord)}</h2>
 
@@ -252,7 +256,7 @@
           {:else}
             <div class="video-fallback">
               <p>🤟</p>
-              <button class="link-btn" onclick={() => openExternal(selectedWord.id)}>
+              <button class="link-btn" onclick={() => selectedWord && openExternal(selectedWord.id)}>
                 {$t('signDictionary.openExternal')}
               </button>
             </div>
@@ -260,10 +264,10 @@
         </div>
 
         <div class="detail-actions">
-          <button class="action-btn speak-btn" onclick={() => speak(selectedWord.sv)}>
+          <button class="action-btn speak-btn" onclick={() => selectedWord && speak(selectedWord.sv)}>
             🔊 {$t('signDictionary.listen')}
           </button>
-          <button class="action-btn external-btn" onclick={() => openExternal(selectedWord.id)}>
+          <button class="action-btn external-btn" onclick={() => selectedWord && openExternal(selectedWord.id)}>
             🔗 {$t('signDictionary.openExternal')}
           </button>
         </div>

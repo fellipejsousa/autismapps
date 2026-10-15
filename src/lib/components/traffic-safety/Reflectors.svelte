@@ -1,55 +1,71 @@
-<script>
+<script lang="ts">
   import { speak } from '$lib/tts';
 
-  let { i18n = {}, onback } = $props();
+  type TranslationData = Record<string, any>;
+  type Reflector = {
+    id: string;
+    nameKey: string;
+    position: { x: number; y: number };
+    placed: boolean;
+    emoji: string;
+  };
+  let { i18n = {}, onback = () => {} } = $props<{ i18n?: TranslationData; onback?: () => void }>();
 
   let currentMode = $state('overview'); // 'overview', 'comparison', 'dress-up'
   let isDaytime = $state(true);
-  let dressUpProgress = $state([]);
+  let dressUpProgress = $state<Reflector[]>([]);
   let score = $state(0);
 
-  const reflectorItems = [
+  const reflectorItems: Reflector[] = [
     {
       id: 'vest',
-      name: 'Reflexväst',
+      nameKey: 'item-vest',
       position: { x: 45, y: 35 },
       placed: false,
       emoji: '🦺'
     },
     {
       id: 'hat',
-      name: 'Reflexmössa',
+      nameKey: 'item-hat',
       position: { x: 48, y: 15 },
       placed: false,
       emoji: '🧢'
     },
     {
       id: 'bag',
-      name: 'Reflexer på väska',
+      nameKey: 'item-bag',
       position: { x: 35, y: 45 },
       placed: false,
       emoji: '🎒'
     },
     {
       id: 'shoes',
-      name: 'Reflexer på skor',
+      nameKey: 'item-shoes',
       position: { x: 48, y: 80 },
       placed: false,
       emoji: '👟'
     },
     {
       id: 'band',
-      name: 'Reflexband',
+      nameKey: 'item-band',
       position: { x: 55, y: 45 },
       placed: false,
-      emoji: '📿'
+      emoji: '🟨'
     }
   ];
 
   let availableReflectors = $state([...reflectorItems]);
 
-  function getI18nValue(key) {
-    return key.split('.').reduce((obj, k) => obj?.[k], i18n) || key;
+  function getI18nValue(key: string): string {
+    const value = key.split('.').reduce<any>((obj, segment) => obj?.[segment], i18n);
+    return typeof value === 'string' ? value : key;
+  }
+
+  function formatMessage(key: string, values: Record<string, string | number>): string {
+    return Object.entries(values).reduce(
+      (message, [name, value]) => message.replaceAll(`{${name}}`, String(value)),
+      getI18nValue(key)
+    );
   }
 
   function toggleDayNight() {
@@ -61,7 +77,7 @@
   function startComparison() {
     currentMode = 'comparison';
     isDaytime = true;
-    speak('Jämför hur synlig en person är på dagen och på natten');
+    speak(getI18nValue('reflectors.speech-compare'));
   }
 
   function startDressUp() {
@@ -71,37 +87,41 @@
     // Reset all reflectors
     availableReflectors = reflectorItems.map(item => ({ ...item, placed: false }));
     dressUpProgress = [];
-    speak('Klä personen med reflexer så att den syns bättre i mörkret');
+    speak(getI18nValue('reflectors.speech-dress'));
   }
 
-  function handleReflectorDrop(event, reflector) {
-    event.preventDefault();
+  function placeReflector(reflector: Reflector) {
     if (!reflector.placed) {
       reflector.placed = true;
       score++;
       dressUpProgress = [...dressUpProgress, reflector];
       
-      speak(`Bra! Du satte på ${reflector.name}`);
+      speak(formatMessage('reflectors.speech-placed', { item: getI18nValue(`reflectors.${reflector.nameKey}`) }));
       
       if (dressUpProgress.length === reflectorItems.length) {
         setTimeout(() => {
-          speak('Perfekt! Nu syns personen mycket bättre i mörkret. Reflexer räddar liv!');
+          speak(getI18nValue('reflectors.speech-complete'));
         }, 1000);
       }
     }
   }
 
-  function handleDragStart(event, reflector) {
-    event.dataTransfer.setData('text/plain', reflector.id);
+  function handleReflectorDrop(event: DragEvent, reflector: Reflector) {
+    event.preventDefault();
+    placeReflector(reflector);
   }
 
-  function handleDragOver(event) {
+  function handleDragStart(event: DragEvent, reflector: Reflector) {
+    event.dataTransfer?.setData('text/plain', reflector.id);
+  }
+
+  function handleDragOver(event: DragEvent) {
     event.preventDefault();
   }
 
-  function handleDrop(event) {
+  function handleDrop(event: DragEvent) {
     event.preventDefault();
-    const reflectorId = event.dataTransfer.getData('text/plain');
+    const reflectorId = event.dataTransfer?.getData('text/plain');
     const reflector = availableReflectors.find(r => r.id === reflectorId);
     if (reflector) {
       handleReflectorDrop(event, reflector);
@@ -120,11 +140,7 @@
 
   // Tips about reflectors
   const reflectorTips = [
-    'Reflexer ökar synligheten med upp till 200 meter',
-    'Bär alltid reflexer när du går ute i mörkret',
-    'Sätt reflexer på både framsida och baksida',
-    'Reflexer fungerar bäst på rörliga delar som armar och ben',
-    'Tvätta reflexer försiktigt så de inte tappar sin effekt'
+    'tip-1', 'tip-2', 'tip-3', 'tip-4', 'tip-5'
   ];
 </script>
 
@@ -141,32 +157,29 @@
       <!-- Overview and menu -->
       <div class="overview-section">
         <div class="intro">
-          <h2>Varför är reflexer viktiga?</h2>
-          <p>
-            Reflexer hjälper dig att synas i mörkret. När billjus träffar reflexer 
-            lyser de upp och gör dig synlig för förare på långt håll.
-          </p>
+          <h2>{getI18nValue('reflectors.intro-title')}</h2>
+          <p>{getI18nValue('reflectors.intro-copy')}</p>
         </div>
         
         <div class="activity-buttons">
           <button class="activity-btn" onclick={startComparison}>
             <div class="btn-icon">🌞🌙</div>
-            <h3>Dag vs Natt</h3>
-            <p>Se skillnaden i synlighet</p>
+            <h3>{getI18nValue('reflectors.day-vs-night')}</h3>
+            <p>{getI18nValue('reflectors.day-vs-night-desc')}</p>
           </button>
           
           <button class="activity-btn" onclick={startDressUp}>
             <div class="btn-icon">👕✨</div>
-            <h3>Klä med reflexer</h3>
-            <p>Dra reflexer till rätt plats</p>
+            <h3>{getI18nValue('reflectors.dress-title')}</h3>
+            <p>{getI18nValue('reflectors.dress-desc')}</p>
           </button>
         </div>
 
         <div class="tips-section">
-          <h3>Bra att veta om reflexer:</h3>
+          <h3>{getI18nValue('reflectors.tips-title')}</h3>
           <ul class="tips-list">
             {#each reflectorTips as tip}
-              <li>{tip}</li>
+              <li>{getI18nValue(`reflectors.${tip}`)}</li>
             {/each}
           </ul>
         </div>
@@ -177,9 +190,9 @@
       <!-- Day/Night comparison -->
       <div class="comparison-section">
         <div class="comparison-header">
-          <h2>Synlighet på dagen och natten</h2>
+          <h2>{getI18nValue('reflectors.comparison-title')}</h2>
           <button class="toggle-button" onclick={toggleDayNight}>
-            {isDaytime ? '🌙 Växla till natt' : '🌞 Växla till dag'}
+            {isDaytime ? `🌙 ${getI18nValue('reflectors.switch-to-night')}` : `🌞 ${getI18nValue('reflectors.switch-to-day')}`}
           </button>
         </div>
         
@@ -207,21 +220,19 @@
           
           <div class="visibility-info">
             <div class="time-indicator">
-              {isDaytime ? '☀️ DAG' : '🌙 NATT'}
+              {isDaytime ? `☀️ ${getI18nValue('reflectors.day-label')}` : `🌙 ${getI18nValue('reflectors.night-label')}`}
             </div>
             
             <div class="visibility-stats">
               {#if isDaytime}
                 <div class="stat good">
-                  <strong>Synlighet: Bra</strong><br>
-                  Du syns tydligt i dagsljus
+                  <strong>{getI18nValue('reflectors.visibility')}: {getI18nValue('reflectors.good-in-daylight')}</strong><br>
+                  {getI18nValue('reflectors.seen-in-daylight')}
                 </div>
               {:else}
                 <div class="stat {dressUpProgress.length > 0 ? 'excellent' : 'poor'}">
-                  <strong>Synlighet: {dressUpProgress.length > 0 ? 'Utmärkt med reflexer!' : 'Dålig utan reflexer'}</strong><br>
-                  {dressUpProgress.length > 0 ? 
-                    'Reflexer gör dig synlig på 200m avstånd!' : 
-                    'Utan reflexer syns du bara på 20-30m avstånd'}
+                  <strong>{getI18nValue('reflectors.visibility')}: {getI18nValue(dressUpProgress.length > 0 ? 'reflectors.excellent-with-reflectors' : 'reflectors.poor-without-reflectors')}</strong><br>
+                  {getI18nValue(dressUpProgress.length > 0 ? 'reflectors.distance-with-reflectors' : 'reflectors.distance-without-reflectors')}
                 </div>
               {/if}
             </div>
@@ -229,7 +240,7 @@
         </div>
         
         <button class="back-demo-button" onclick={goBack}>
-          Tillbaka till meny
+          {getI18nValue('reflectors.back-to-menu')}
         </button>
       </div>
     {/if}
@@ -238,15 +249,18 @@
       <!-- Dress-up activity -->
       <div class="dress-up-section">
         <div class="dress-up-header">
-          <h2>Klä personen med reflexer</h2>
+          <h2>{getI18nValue('reflectors.dress-person')}</h2>
           <div class="progress-info">
-            <span class="progress">Reflexer på plats: {score}/{reflectorItems.length}</span>
-            <button class="reset-button" onclick={resetDressUp}>Börja om</button>
+            <span class="progress">{formatMessage('reflectors.progress', { score, total: reflectorItems.length })}</span>
+            <button class="reset-button" onclick={resetDressUp}>{getI18nValue('reflectors.restart')}</button>
           </div>
         </div>
         
         <div class="dress-up-game">
-          <div class="character-area"
+          <div
+               class="character-area"
+               role="group"
+               aria-label={getI18nValue('reflectors.place-on-person')}
                ondragover={handleDragOver}
                ondrop={handleDrop}>
             <div class="character">
@@ -264,37 +278,40 @@
             </div>
             
             <div class="drop-instruction">
-              Dra reflexer hit
+              {getI18nValue('reflectors.drop-reflectors-here')}
             </div>
           </div>
           
           <div class="reflector-items">
-            <h3>Tillgängliga reflexer:</h3>
+            <h3>{getI18nValue('reflectors.available')}</h3>
             <div class="items-grid">
               {#each availableReflectors as reflector}
                 {#if !reflector.placed}
-                  <div 
+                  <button
+                    type="button"
                     class="reflector-item"
                     draggable="true"
                     ondragstart={(e) => handleDragStart(e, reflector)}
+                    onclick={() => placeReflector(reflector)}
+                    aria-label={formatMessage('reflectors.add-reflector', { item: getI18nValue(`reflectors.${reflector.nameKey}`) })}
                   >
                     <div class="item-icon">{reflector.emoji}</div>
-                    <div class="item-name">{reflector.name}</div>
-                  </div>
+                    <div class="item-name">{getI18nValue(`reflectors.${reflector.nameKey}`)}</div>
+                  </button>
                 {/if}
               {/each}
             </div>
             
             {#if score === reflectorItems.length}
               <div class="completion-message">
-                🎉 Fantastiskt! Nu syns personen mycket bättre i mörkret!
+                🎉 {getI18nValue('reflectors.completion')}
               </div>
             {/if}
           </div>
         </div>
         
         <button class="back-game-button" onclick={goBack}>
-          Tillbaka till meny
+          {getI18nValue('common.back')}
         </button>
       </div>
     {/if}
@@ -771,6 +788,9 @@
   }
 
   .reflector-item {
+    font: inherit;
+    color: inherit;
+    text-align: center;
     background: white;
     border: 2px solid #ddd;
     border-radius: 12px;

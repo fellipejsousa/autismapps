@@ -95,28 +95,28 @@ export const emotionData = [
     icon: '😊',
     sentence: 'Jag fick en present!',
     contour: [55, 65, 75, 80, 85, 80],
-    arasaacId: 6011, // happy
+    arasaacId: 35533, // happy face
   },
   {
     emotion: 'ledsen',
     icon: '😢',
     sentence: 'Min ballong flög iväg.',
     contour: [50, 45, 40, 38, 35, 30],
-    arasaacId: 6054, // sad
+    arasaacId: 35545, // sad face
   },
   {
     emotion: 'arg',
     icon: '😠',
     sentence: 'Sluta göra så!',
     contour: [75, 80, 85, 70, 55, 40],
-    arasaacId: 6014, // angry
+    arasaacId: 35539, // angry face
   },
   {
     emotion: 'förvånad',
     icon: '😲',
     sentence: 'Oj, vad hände!?',
     contour: [50, 60, 80, 90, 70, 50],
-    arasaacId: 6062, // surprised
+    arasaacId: 35529, // surprised face
   },
 ];
 

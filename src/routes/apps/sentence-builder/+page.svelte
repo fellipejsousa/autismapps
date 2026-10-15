@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -8,7 +8,10 @@
   import { awardStar, GoldStarBurst } from '$lib/rewards';
 
   // Fitzgerald Key: yellow=person, green=verb, orange=object
-  const SENTENCES = [
+  type Category = 'person' | 'verb' | 'object' | 'feeling' | 'other';
+  type Word = { wordKey: string; cat: Category; id: number; used: boolean };
+
+  const SENTENCES: { parts: { wordKey: string; cat: Category }[] }[] = [
     { parts: [
       { wordKey: 'sentence.jag', cat: 'person' },
       { wordKey: 'sentence.vill', cat: 'verb' },
@@ -49,13 +52,13 @@
   const CAT_COLORS = { person: '#f5c542', verb: '#4caf50', object: '#ff9800', feeling: '#2196f3', other: '#9e9e9e' };
 
   let sentIdx = $state(0);
-  let available = $state([]);
-  let placed = $state([]);
+  let available = $state<Word[]>([]);
+  let placed = $state<Word[]>([]);
   let correct = $state(false);
   let score = $state(0);
   let showStar = $state(false);
 
-  function shuffle(arr) {
+  function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -71,7 +74,7 @@
   }
   load();
 
-  function placeWord(w) {
+  function placeWord(w: Word) {
     if (w.used) return;
     placed = [...placed, w];
     available = available.map(a => a.id === w.id ? { ...a, used: true } : a);
@@ -92,7 +95,7 @@
     }
   }
 
-  function removeWord(idx) {
+  function removeWord(idx: number) {
     const w = placed[idx];
     placed = placed.filter((_, i) => i !== idx);
     available = available.map(a => a.id === w.id ? { ...a, used: false } : a);

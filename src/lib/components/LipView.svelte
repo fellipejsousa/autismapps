@@ -3,7 +3,7 @@
   Simplified child-friendly face with animated lip positions.
 -->
 <script>
-  /** @type {import('$lib/data/mouth-sounds').sounds[0] | null} */
+  /** @type {(typeof import('$lib/data/mouth-sounds').sounds)[number] | null} */
   export let sound = null;
 
   // Lip shape parameters

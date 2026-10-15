@@ -95,9 +95,11 @@
       {/each}
     </div>
 
-    <div class="story-step" in:fly={{ x: 20, duration: 200 }} key={storyStep}>
+    {#key storyStep}
+    <div class="story-step" in:fly={{ x: 20, duration: 200 }}>
       <p class="step-text">{currentStepText}</p>
     </div>
+    {/key}
 
     <div class="step-nav">
       <button class="nav-btn" on:click={prevStep} disabled={storyStep === 0}>←</button>

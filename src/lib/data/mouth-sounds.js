@@ -31,14 +31,14 @@ export const SOUND_TYPES = [
  *   exampleArasaac: number,
  *   lips: string, tongue: string, jaw: string, velum: string, airflow: string,
  *   tongueX: number, tongueY: number, tongueTipX: number, tongueTipY: number,
- *   lipRound: number, lipOpen: number
+ *   lipRound: number, lipOpen: number, special?: string
  * }>} */
 export const sounds = [
   // ─── VOWELS ───
   {
     id: 'a', symbol: 'a', ipa: 'ɑː', type: 'vowels',
     voiced: true, exampleWord: 'apa', exampleWordEn: 'monkey',
-    exampleArasaac: 2434,
+    exampleArasaac: 2477,
     lips: 'open', tongue: 'back-low', jaw: 'wide', velum: 'closed', airflow: 'continuous',
     tongueX: 0.45, tongueY: 0.75, tongueTipX: 0.35, tongueTipY: 0.72,
     lipRound: 0, lipOpen: 0.9,
@@ -46,7 +46,7 @@ export const sounds = [
   {
     id: 'e', symbol: 'e', ipa: 'eː', type: 'vowels',
     voiced: true, exampleWord: 'ek', exampleWordEn: 'oak',
-    exampleArasaac: 38268,
+    exampleArasaac: 3057,
     lips: 'spread', tongue: 'front-high', jaw: 'narrow', velum: 'closed', airflow: 'continuous',
     tongueX: 0.35, tongueY: 0.42, tongueTipX: 0.28, tongueTipY: 0.48,
     lipRound: 0, lipOpen: 0.3,
@@ -62,7 +62,7 @@ export const sounds = [
   {
     id: 'o', symbol: 'o', ipa: 'uː', type: 'vowels',
     voiced: true, exampleWord: 'orm', exampleWordEn: 'snake',
-    exampleArasaac: 2627,
+    exampleArasaac: 2568,
     lips: 'rounded', tongue: 'back-high', jaw: 'narrow', velum: 'closed', airflow: 'continuous',
     tongueX: 0.55, tongueY: 0.40, tongueTipX: 0.35, tongueTipY: 0.55,
     lipRound: 0.9, lipOpen: 0.25,
@@ -78,7 +78,7 @@ export const sounds = [
   {
     id: 'y', symbol: 'y', ipa: 'yː', type: 'vowels',
     voiced: true, exampleWord: 'yxa', exampleWordEn: 'axe',
-    exampleArasaac: 2890,
+    exampleArasaac: 6519,
     lips: 'rounded', tongue: 'front-high', jaw: 'narrow', velum: 'closed', airflow: 'continuous',
     tongueX: 0.33, tongueY: 0.34, tongueTipX: 0.26, tongueTipY: 0.44,
     lipRound: 0.8, lipOpen: 0.15,
@@ -102,7 +102,7 @@ export const sounds = [
   {
     id: 'ö', symbol: 'ö', ipa: 'øː', type: 'vowels',
     voiced: true, exampleWord: 'öga', exampleWordEn: 'eye',
-    exampleArasaac: 3185,
+    exampleArasaac: 6573,
     lips: 'rounded', tongue: 'front-high', jaw: 'narrow', velum: 'closed', airflow: 'continuous',
     tongueX: 0.35, tongueY: 0.40, tongueTipX: 0.28, tongueTipY: 0.50,
     lipRound: 0.7, lipOpen: 0.3,
@@ -152,7 +152,7 @@ export const sounds = [
   {
     id: 't', symbol: 't', ipa: 't', type: 'stops',
     voiced: false, exampleWord: 'tåg', exampleWordEn: 'train',
-    exampleArasaac: 2658,
+    exampleArasaac: 2603,
     lips: 'open', tongue: 'tip-alveolar', jaw: 'narrow', velum: 'closed', airflow: 'burst',
     tongueX: 0.38, tongueY: 0.48, tongueTipX: 0.25, tongueTipY: 0.32,
     lipRound: 0, lipOpen: 0.3,
@@ -196,7 +196,7 @@ export const sounds = [
   {
     id: 'tj', symbol: 'tj', ipa: 'ɕ', type: 'fricatives',
     voiced: false, exampleWord: 'tjuv', exampleWordEn: 'thief',
-    exampleArasaac: 2860,
+    exampleArasaac: 4674,
     lips: 'spread', tongue: 'blade-palatal', jaw: 'narrow', velum: 'closed', airflow: 'continuous',
     tongueX: 0.38, tongueY: 0.36, tongueTipX: 0.26, tongueTipY: 0.34,
     lipRound: 0, lipOpen: 0.2,
@@ -285,11 +285,13 @@ export const SOUND_PAIRS = [
 ];
 
 /** Helper: get sound by id */
+/** @param {string} id */
 export function getSound(id) {
   return sounds.find(s => s.id === id);
 }
 
 /** Helper: get sounds by type */
+/** @param {string} type */
 export function getSoundsByType(type) {
   return sounds.filter(s => s.type === type);
 }

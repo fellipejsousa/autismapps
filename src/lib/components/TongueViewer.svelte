@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { speak, stop as stopTTS } from '$lib/tts';
   import { fade, fly } from 'svelte/transition';
   import SagittalView from './SagittalView.svelte';
   import SoundComparison from './SoundComparison.svelte';
   import { tonguePositions, soundLevels, practiceSequences } from '$lib/data/tongue-positions';
+
+  type Sequence = (typeof practiceSequences)[number];
 
   // ─── STATE ───
   let currentSound = 'a';
@@ -19,14 +21,14 @@
   // Sequence playback
   let playingSequence = false;
   let sequenceIndex = -1;
-  let activeSequence = null;
+  let activeSequence: Sequence | null = null;
 
   $: currentPos = tonguePositions[currentSound] || null;
   $: targetPos = showTarget && targetSound ? tonguePositions[targetSound] : null;
   $: animDuration = slowMotion ? 1200 : 300;
   $: activeSounds = soundLevels[activeLevel]?.sounds || [];
 
-  function selectSound(sound) {
+  function selectSound(sound: string) {
     if (playingSequence) return;
     currentSound = sound;
     const pos = tonguePositions[sound];
@@ -44,11 +46,11 @@
     }
   }
 
-  function setTargetSound(sound) {
+  function setTargetSound(sound: string) {
     targetSound = sound;
   }
 
-  async function speakText(text) {
+  async function speakText(text: string) {
     try {
       await speak(text);
     } catch (e) {
@@ -57,7 +59,7 @@
   }
 
   // ─── SEQUENCE PLAYBACK ───
-  async function playSequence(seq) {
+  async function playSequence(seq: Sequence) {
     if (playingSequence) {
       stopSequence();
       return;
@@ -94,8 +96,8 @@
     stopTTS();
   }
 
-  function sleep(ms) {
-    return new Promise(r => setTimeout(r, ms));
+  function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 </script>
 
@@ -729,9 +731,6 @@
   }
 
   @media (max-width: 400px) {
-    .control-btn:not(.icon-only) span {
-      display: none;
-    }
     .level-name {
       display: none;
     }

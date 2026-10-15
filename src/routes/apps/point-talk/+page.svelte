@@ -170,7 +170,6 @@
 
 <style>
   .point-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .sentence-strip {
     display: flex; align-items: center; gap: 8px; padding: 10px 16px;

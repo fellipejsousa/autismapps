@@ -1,0 +1,11 @@
+# Keep the launcher available without an automatic directory-slash redirect.
+DirectorySlash Off
+
+# Never cache the live entry point, fallback, or service-worker script.
+<IfModule mod_headers.c>
+  <FilesMatch "^(service-worker\.js|index\.html|fallback\.html)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>

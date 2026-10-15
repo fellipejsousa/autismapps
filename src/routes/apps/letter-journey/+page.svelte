@@ -635,10 +635,6 @@
 
 <style>
   .letter-page { display: flex; flex-direction: column; min-height: 100dvh; position: relative; }
-  .back-btn:hover { background: var(--bg-hover); }
-  .stats-bar { display: flex; gap: 10px; }
-  .stat { font-weight: 600; font-size: 1em; }
-  .fire { color: #E74C3C; }
 
   .menu-page { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
   .menu-hero { text-align: center; }
@@ -660,7 +656,6 @@
   .mode-card p { font-size: 0.8em; color: var(--text-muted); }
 
   .speed-control { text-align: center; padding: 12px; }
-  .speed-control label { font-weight: 600; font-size: 0.9em; }
   .speed-options { display: flex; gap: 8px; justify-content: center; margin: 8px 0; }
   .speed-btn {
     width: 56px; height: 56px; font-size: 1.5em; border-radius: 50%;

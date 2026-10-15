@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -9,7 +9,11 @@
   import { fade } from 'svelte/transition';
   import { get } from 'svelte/store';
 
-  const TASKS = [
+  type TaskTime = 'morning' | 'afternoon' | 'evening';
+  type Task = { id: string; icon: string; steps: string[]; times: TaskTime[] };
+  type ProgressRecord = Record<string, boolean>;
+
+  const TASKS: Task[] = [
     { id: 'brush-teeth', icon: '🪥', steps: ['💧', '🪥', '⏱️', '🚰'], times: ['morning', 'evening'] },
     { id: 'get-dressed', icon: '👕', steps: ['👖', '👕', '🧦', '👟'], times: ['morning'] },
     { id: 'wash-hands', icon: '🧼', steps: ['💧', '🧼', '👐', '🧻'], times: ['morning', 'afternoon', 'evening'] },
@@ -20,11 +24,11 @@
     { id: 'homework', icon: '📝', steps: ['📚', '✏️', '⏱️', '✅'], times: ['afternoon'] },
   ];
 
-  let view = $state('board'); // 'board' | 'task'
-  let selectedTask = $state(null);
-  let completedToday = $state({});
+  let view = $state<'board' | 'task'>('board');
+  let selectedTask = $state<Task | null>(null);
+  let completedToday = $state<ProgressRecord>({});
   let currentStep = $state(0);
-  let stepDone = $state([]);
+  let stepDone = $state<boolean[]>([]);
   let showCelebration = $state(false);
 
   // Load progress
@@ -35,7 +39,10 @@
         if (data) {
           const today = new Date().toDateString();
           if (data.date === today) {
-            completedToday = data.completed || {};
+            const completed: unknown = data.completed;
+            completedToday = completed && typeof completed === 'object' && !Array.isArray(completed)
+              ? Object.fromEntries(Object.entries(completed).filter((entry) => typeof entry[1] === 'boolean'))
+              : {};
           }
         }
       });
@@ -52,7 +59,7 @@
     }
   }
 
-  function openTask(task) {
+  function openTask(task: Task) {
     selectedTask = task;
     currentStep = 0;
     stepDone = task.steps.map(() => false);
@@ -60,14 +67,16 @@
     speak($t(`practiceBoard.task.${task.id}`));
   }
 
-  function toggleStep(i) {
+  function toggleStep(i: number) {
+    const task = selectedTask;
+    if (!task || i < 0 || i >= stepDone.length) return;
     stepDone = stepDone.map((v, idx) => idx === i ? !v : v);
     if (stepDone[i]) {
-      speak($t(`practiceBoard.step.${selectedTask.id}.${i}`));
+      speak($t(`practiceBoard.step.${task.id}.${i}`));
     }
     // Check if all done
     if (stepDone.every(Boolean)) {
-      completedToday = { ...completedToday, [selectedTask.id]: true };
+      completedToday = { ...completedToday, [task.id]: true };
       saveProgress();
       showCelebration = true;
       speak($t('practiceBoard.wellDone'));
@@ -90,9 +99,9 @@
   let completedCount = $derived(Object.values(completedToday).filter(Boolean).length);
   let totalTasks = $derived(TASKS.length);
 
-  function getTimeIcon(t) {
-    if (t === 'morning') return '🌅';
-    if (t === 'afternoon') return '☀️';
+  function getTimeIcon(time: TaskTime) {
+    if (time === 'morning') return '🌅';
+    if (time === 'afternoon') return '☀️';
     return '🌙';
   }
 </script>
@@ -135,7 +144,7 @@
         {/each}
       </div>
 
-    {:else if view === 'task'}
+    {:else if view === 'task' && selectedTask}
       <div class="task-detail">
         <h2>{selectedTask.icon} {$t(`practiceBoard.task.${selectedTask.id}`)}</h2>
 

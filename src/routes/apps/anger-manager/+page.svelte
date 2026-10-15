@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,9 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const LEVELS = [
+  type Level = { id: number; emoji: string; color: string; label: string };
+  type Strategy = { icon: string; key: string };
+  const LEVELS: Level[] = [
     { id: 1, emoji: '😌', color: '#4caf50', label: 'angerManager.level.calm' },
     { id: 2, emoji: '😐', color: '#8bc34a', label: 'angerManager.level.ok' },
     { id: 3, emoji: '😤', color: '#ff9800', label: 'angerManager.level.annoyed' },
@@ -14,7 +16,7 @@
     { id: 5, emoji: '🤯', color: '#b71c1c', label: 'angerManager.level.furious' },
   ];
 
-  const STRATEGIES = [
+  const STRATEGIES: Strategy[] = [
     { icon: '🫁', key: 'angerManager.strat.breathe' },
     { icon: '🔢', key: 'angerManager.strat.count' },
     { icon: '🚶', key: 'angerManager.strat.walk' },
@@ -25,16 +27,16 @@
     { icon: '🗣️', key: 'angerManager.strat.talk' },
   ];
 
-  let selected = $state(null);
+  let selected = $state<Level | null>(null);
   let showStrategies = $state(false);
 
-  function selectLevel(level) {
+  function selectLevel(level: Level) {
     selected = level;
     speak($t(level.label));
     showStrategies = level.id >= 3;
   }
 
-  function useStrategy(s) {
+  function useStrategy(s: Strategy) {
     speak($t(s.key));
   }
 </script>

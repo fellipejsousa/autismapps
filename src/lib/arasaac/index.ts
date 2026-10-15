@@ -23,7 +23,7 @@ export async function searchPictograms(
   query: string,
   lang: string = 'en'
 ): Promise<PictogramSearchResult[]> {
-  const queryLower = query.toLowerCase().trim();
+  const queryLower = query.normalize('NFKC').toLocaleLowerCase('en').trim();
   const seenIds = new Set<number>();
   const results: PictogramSearchResult[] = [];
 
@@ -90,9 +90,15 @@ export async function searchPictograms(
     if (!res.ok) return results.slice(0, 50);
     const data: Pictogram[] = await res.json();
     const lookup = lang === 'sv' ? await loadSvLookup() : null;
-    for (const p of data.slice(0, 50)) {
+    for (const p of data) {
       if (seenIds.has(p._id)) continue;
-      const enKeyword = p.keywords[0]?.keyword || query;
+      // ARASAAC search is fuzzy. Do not show a loosely related result when
+      // the local Swedish vocabulary has no match for the user's exact term.
+      const exactKeyword = p.keywords.find(
+        ({ keyword }) => keyword.normalize('NFKC').toLocaleLowerCase('en').trim() === queryLower
+      );
+      if (!exactKeyword) continue;
+      const enKeyword = exactKeyword.keyword;
       const keyword = lookup ? (lookup[enKeyword.toLowerCase()]?.sv || enKeyword) : enKeyword;
       results.push({
         id: p._id,

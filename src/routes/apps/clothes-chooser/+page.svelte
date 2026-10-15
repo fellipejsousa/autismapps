@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,12 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const WEATHER_TYPES = [
+  type BodyPart = 'head' | 'top' | 'bottom' | 'feet' | 'accessories';
+  type WeatherId = 'sunny' | 'rainy' | 'snowy' | 'windy' | 'warm' | 'cold';
+  type Weather = { id: WeatherId; icon: string; temp: string };
+  type Clothing = { id: string; icon: string; sv: string; weather: WeatherId[] };
+
+  const WEATHER_TYPES: Weather[] = [
     { id: 'sunny', icon: '☀️', temp: '25°' },
     { id: 'rainy', icon: '🌧️', temp: '12°' },
     { id: 'snowy', icon: '❄️', temp: '-5°' },
@@ -15,7 +20,7 @@
     { id: 'cold', icon: '🥶', temp: '0°' },
   ];
 
-  const CLOTHES = {
+  const CLOTHES: Record<BodyPart, Clothing[]> = {
     head: [
       { id: 'cap', icon: '🧢', sv: 'keps', weather: ['sunny', 'warm'] },
       { id: 'beanie', icon: '🧶', sv: 'mössa', weather: ['snowy', 'cold', 'windy'] },
@@ -47,32 +52,35 @@
     ],
   };
 
-  const BODY_PARTS = ['head', 'top', 'bottom', 'feet', 'accessories'];
+  const BODY_PARTS: BodyPart[] = ['head', 'top', 'bottom', 'feet', 'accessories'];
 
-  let selectedWeather = $state(null);
-  let chosen = $state({});
+  let selectedWeather = $state<Weather | null>(null);
+  let chosen = $state<Partial<Record<BodyPart, Clothing>>>({});
   let step = $state(0); // 0=weather, 1..5=body parts, 6=summary
   let showFeedback = $state(false);
   let feedbackCorrect = $state(false);
 
-  let currentPart = $derived(step >= 1 && step <= 5 ? BODY_PARTS[step - 1] : null);
+  let currentPart = $derived(step >= 1 && step <= 5 ? BODY_PARTS[step - 1] ?? null : null);
   let availableClothes = $derived(currentPart ? CLOTHES[currentPart] : []);
   let recommendedIds = $derived(
-    currentPart
-      ? CLOTHES[currentPart].filter(c => c.weather.includes(selectedWeather?.id)).map(c => c.id)
+    currentPart && selectedWeather
+      ? CLOTHES[currentPart].filter(c => c.weather.includes(selectedWeather!.id)).map(c => c.id)
       : []
   );
 
-  function selectWeather(w) {
+  function selectWeather(w: Weather) {
     selectedWeather = w;
     chosen = {};
     speak($t(`clothesChooser.weather.${w.id}`));
     step = 1;
   }
 
-  function selectClothing(item) {
-    chosen = { ...chosen, [currentPart]: item };
-    const correct = item.weather.includes(selectedWeather.id);
+  function selectClothing(item: Clothing) {
+    const part = currentPart;
+    const weather = selectedWeather;
+    if (!part || !weather) return;
+    chosen = { ...chosen, [part]: item };
+    const correct = item.weather.includes(weather.id);
     feedbackCorrect = correct;
     showFeedback = true;
     speak(correct ? `${item.sv}! ${$t('clothesChooser.goodChoice')}` : `${item.sv}. ${$t('clothesChooser.thinkAgain')}`);
@@ -94,7 +102,7 @@
   }
 
   function speakSummary() {
-    const parts = Object.values(chosen).map(c => c.sv).join(', ');
+    const parts = Object.values(chosen).filter((item): item is Clothing => Boolean(item)).map(item => item.sv).join(', ');
     speak(`${$t('clothesChooser.youChose')}: ${parts}`);
   }
 </script>
@@ -123,7 +131,7 @@
         {/each}
       </div>
 
-    {:else if step >= 1 && step <= 5}
+    {:else if step >= 1 && step <= 5 && selectedWeather && currentPart}
       <div class="progress-dots">
         {#each BODY_PARTS as _, i}
           <span class="dot" class:active={i === step - 1} class:done={i < step - 1}></span>
@@ -156,10 +164,11 @@
         <h2>🎉 {$t('clothesChooser.allDone')}</h2>
         <div class="outfit">
           {#each BODY_PARTS as part}
-            {#if chosen[part]}
+            {@const item = chosen[part]}
+            {#if item}
               <div class="outfit-item">
-                <span class="outfit-icon">{chosen[part].icon}</span>
-                <span class="outfit-label">{chosen[part].sv}</span>
+                <span class="outfit-icon">{item.icon}</span>
+                <span class="outfit-label">{item.sv}</span>
               </div>
             {/if}
           {/each}

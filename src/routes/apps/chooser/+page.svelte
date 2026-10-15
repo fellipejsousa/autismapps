@@ -121,7 +121,6 @@
 
 <style>
   .chooser-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .content { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .instruction { text-align: center; color: var(--text-muted); font-weight: 600; }

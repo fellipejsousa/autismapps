@@ -1,24 +1,28 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade } from 'svelte/transition';
   import { createEventDispatcher, onMount, onDestroy } from 'svelte';
   import CelebrationOverlay from './CelebrationOverlay.svelte';
 
-  let { playSound, oncomplete } = $props();
+  type Circle = { id: number; x: number; y: number; size: number; color: string; active: boolean; order: number };
+  let { playSound, oncomplete } = $props<{
+    playSound: (sound: 'error' | 'tap' | 'success') => void;
+    oncomplete?: (event: { detail: { exerciseId: string; stars: number; score: number } }) => void;
+  }>();
   const dispatch = createEventDispatcher();
 
   const COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#e91e63'];
 
-  let gameState = $state('idle'); // idle | playing | done
-  let circles = $state([]);
+  let gameState = $state<'idle' | 'playing' | 'done'>('idle');
+  let circles = $state<Circle[]>([]);
   let currentIndex = $state(0);
   let score = $state(0);
   let misses = $state(0);
   let level = $state(1);
   let timeLeft = $state(0);
   let totalTime = $state(30);
-  let timer = null;
-  let containerEl;
+  let timer: ReturnType<typeof setInterval> | null = null;
+  let containerEl: HTMLDivElement;
 
   function startGame() {
     gameState = 'playing';
@@ -36,7 +40,7 @@
   function spawnCircle() {
     if (gameState !== 'playing') return;
     const count = Math.min(1 + Math.floor(level / 3), 3);
-    const newCircles = [];
+    const newCircles: Circle[] = [];
     for (let i = 0; i < count; i++) {
       const size = Math.max(48, 80 - level * 3);
       newCircles.push({
@@ -53,7 +57,7 @@
     currentIndex = 0;
   }
 
-  function tapCircle(circle, idx) {
+  function tapCircle(_circle: Circle, idx: number) {
     if (gameState !== 'playing') return;
     if (idx === currentIndex) {
       playSound('tap');
@@ -71,7 +75,8 @@
   }
 
   function endGame() {
-    clearInterval(timer);
+    if (timer) clearInterval(timer);
+    timer = null;
     gameState = 'done';
     playSound('success');
     const stars = score >= 30 ? 3 : score >= 15 ? 2 : score >= 5 ? 1 : 0;
@@ -79,12 +84,13 @@
   }
 
   function reset() {
-    clearInterval(timer);
+    if (timer) clearInterval(timer);
+    timer = null;
     gameState = 'idle';
     circles = [];
   }
 
-  onDestroy(() => clearInterval(timer));
+  onDestroy(() => { if (timer) clearInterval(timer); });
 </script>
 
 <div class="tapping-game" in:fade bind:this={containerEl}>

@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
-  import { t } from '$lib/i18n';
+  import { t, locale } from '$lib/i18n';
   import { speak } from '$lib/tts';
   import { searchPictograms, getPictogramUrl } from '$lib/arasaac';
   import { fade } from 'svelte/transition';
@@ -170,7 +170,7 @@
   async function searchArasaac() {
     if (!searchQuery.trim()) return;
     searching = true;
-    const results = await searchPictograms(searchQuery, get(locale));
+    const results = await searchPictograms(searchQuery, $locale);
     searchResults = results.slice(0, 12);
     searching = false;
   }
@@ -294,7 +294,7 @@
     {/if}
 
     <!-- Tab bar -->
-    <nav class="tabs" role="tablist">
+    <div class="tabs" role="tablist">
       {#each pages as page}
         <button
           class="tab"
@@ -308,7 +308,7 @@
           <span class="tab-name">{$t(page.name)}</span>
         </button>
       {/each}
-    </nav>
+    </div>
 
     {#if loading}
       <div class="loading">⏳ {$t('commBook.loading')}</div>
@@ -381,13 +381,12 @@
 <style>
   .app { display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg, #f5f5f5); color: var(--text, #1a1a2e); }
   h1 { font-size: 1.3em; margin: 0; flex: 1; }
-  h2, h3, h4 { margin: 0 0 8px; font-weight: 600; }
+  h3, h4 { margin: 0 0 8px; font-weight: 600; }
   h3 { font-size: 1em; }
   h4 { font-size: .9em; }
   .cnt { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 16px; max-width: 900px; margin: 0 auto; width: 100%; }
   .cr { text-align: center; padding: 12px; font-size: .75em; opacity: .5; }
 
-  .hdr-actions { display: flex; gap: 6px; }
   .icon-btn { background: none; border: 2px solid var(--border, #ddd); border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 1em; }
   .icon-btn.active { background: #3498DB20; border-color: #3498DB; }
 

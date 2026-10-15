@@ -23,7 +23,7 @@ export const PICTO_IDS = {
   cry: 7147,
   ball: 3241,
   basket: 3012,
-  box: 24749,
+  box: 5935,
   dog: 7202,
   cat: 7114,
   playground: 33064,
@@ -63,16 +63,17 @@ export const PICTO_IDS = {
   build: 2713,
   tower: 6232,
   break_: 6604,
-  secret: 35883,
+  secret: 39842,
   hat: 2572,
   backpack: 2475,
-  shoes: 2775,
+  shoes: 2622,
   umbrella: 2500,
 };
 
 /**
  * Get ARASAAC pictogram URL for a given ID
  */
+/** @param {number} id */
 export function getPictoUrl(id) {
   return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 }

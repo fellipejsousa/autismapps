@@ -1,18 +1,22 @@
 <script>
   import { speak } from '$lib/tts';
 
+  /** @typedef {{ id: string, nameKey: string, descriptionKey: string, svg: string, color: string }} RoadSign */
+
   let { i18n = {}, onback } = $props();
 
   let currentMode = $state('overview'); // 'overview', 'flashcard', 'quiz'
   let currentSignIndex = $state(0);
   let score = $state(0);
+  /** @type {RoadSign[]} */
   let quizAnswers = $state([]);
 
+  /** @type {RoadSign[]} */
   const signs = [
     {
       id: 'stop',
-      name: 'Stopp',
-      description: 'Du måste stanna helt innan du fortsätter',
+      nameKey: 'road-signs.stop',
+      descriptionKey: 'road-signs.stop-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <polygon points="35,15 85,15 105,35 105,85 85,105 35,105 15,85 15,35" fill="#FF0000" stroke="#FFFFFF" stroke-width="3"/>
         <text x="60" y="70" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">STOPP</text>
@@ -21,8 +25,8 @@
     },
     {
       id: 'crosswalk',
-      name: 'Övergångsställe',
-      description: 'Här kan fotgängare korsa gatan säkert',
+      nameKey: 'road-signs.crosswalk',
+      descriptionKey: 'road-signs.crosswalk-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <rect x="10" y="10" width="100" height="100" rx="15" fill="#0066CC" stroke="#FFFFFF" stroke-width="3"/>
         <path d="M40 35 L50 35 L55 45 L65 45 L70 35 L80 35 L75 55 L70 75 L65 85 L55 85 L50 75 L45 55 Z" fill="white"/>
@@ -33,8 +37,8 @@
     },
     {
       id: 'warning',
-      name: 'Varning',
-      description: 'Var extra försiktig här',
+      nameKey: 'road-signs.warning',
+      descriptionKey: 'road-signs.warning-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <polygon points="60,15 100,90 20,90" fill="#FFCC00" stroke="#000000" stroke-width="3"/>
         <text x="60" y="70" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="black" text-anchor="middle">!</text>
@@ -43,8 +47,8 @@
     },
     {
       id: 'bicycle-path',
-      name: 'Cykelväg',
-      description: 'Här får endast cyklar åka',
+      nameKey: 'road-signs.bicycle-path',
+      descriptionKey: 'road-signs.bicycle-path-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="50" fill="#0066CC" stroke="#FFFFFF" stroke-width="3"/>
         <circle cx="35" cy="70" r="12" fill="none" stroke="white" stroke-width="3"/>
@@ -55,8 +59,8 @@
     },
     {
       id: 'playground',
-      name: 'Lekplats',
-      description: 'Barn leker här - kör försiktigt',
+      nameKey: 'road-signs.playground',
+      descriptionKey: 'road-signs.playground-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <rect x="10" y="10" width="100" height="100" rx="15" fill="#FF6600" stroke="#FFFFFF" stroke-width="3"/>
         <circle cx="45" cy="35" r="8" fill="white"/>
@@ -73,8 +77,8 @@
     },
     {
       id: 'speed-limit',
-      name: 'Hastighetsbegränsning 30',
-      description: 'Bilar får inte köra fortare än 30 km/h',
+      nameKey: 'road-signs.speed-limit',
+      descriptionKey: 'road-signs.speed-limit-description',
       svg: `<svg width="120" height="120" viewBox="0 0 120 120">
         <circle cx="60" cy="60" r="50" fill="white" stroke="#FF0000" stroke-width="5"/>
         <text x="60" y="75" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="black" text-anchor="middle">30</text>
@@ -83,15 +87,20 @@
     }
   ];
 
+  /** @param {string} key */
   function getI18nValue(key) {
-    return key.split('.').reduce((obj, k) => obj?.[k], obj => obj || key);
+    /** @type {any} */
+    let value = i18n;
+    for (const segment of key.split('.')) value = value?.[segment];
+    return typeof value === 'string' ? value : key;
   }
 
+  /** @param {number} index */
   function showSign(index) {
     currentSignIndex = index;
     currentMode = 'flashcard';
     const sign = signs[index];
-    speak(`${sign.name}. ${sign.description}`);
+    speak(`${getI18nValue(sign.nameKey)}. ${getI18nValue(sign.descriptionKey)}`);
   }
 
   function startQuiz() {
@@ -112,13 +121,14 @@
     currentSignIndex = signs.findIndex(s => s.id === correctSign.id);
   }
 
+  /** @param {RoadSign} selectedSign */
   function handleQuizAnswer(selectedSign) {
     const correctSign = signs[currentSignIndex];
     if (selectedSign.id === correctSign.id) {
       score++;
       speak(getI18nValue('common.excellent'));
     } else {
-      speak(`${getI18nValue('traffic-lights.try-again')}. ${correctSign.name}`);
+      speak(`${getI18nValue('traffic-lights.try-again')}. ${getI18nValue(correctSign.nameKey)}`);
     }
     
     setTimeout(() => {
@@ -158,7 +168,7 @@
               <div class="sign-icon">
                 {@html sign.svg}
               </div>
-              <div class="sign-name">{sign.name}</div>
+              <div class="sign-name">{getI18nValue(sign.nameKey)}</div>
             </button>
           {/each}
         </div>
@@ -174,8 +184,8 @@
           </div>
           
           <div class="sign-info">
-            <h2>{signs[currentSignIndex].name}</h2>
-            <p>{signs[currentSignIndex].description}</p>
+            <h2>{getI18nValue(signs[currentSignIndex].nameKey)}</h2>
+            <p>{getI18nValue(signs[currentSignIndex].descriptionKey)}</p>
           </div>
           
           <div class="navigation">
@@ -184,17 +194,17 @@
               onclick={() => showSign(currentSignIndex === 0 ? signs.length - 1 : currentSignIndex - 1)}
               disabled={signs.length <= 1}
             >
-              ← Föregående
+              ← {getI18nValue('road-signs.previous')}
             </button>
             <button class="nav-button back" onclick={goBack}>
-              Tillbaka till översikt
+              {getI18nValue('road-signs.back-to-overview')}
             </button>
             <button 
               class="nav-button" 
               onclick={() => showSign(currentSignIndex === signs.length - 1 ? 0 : currentSignIndex + 1)}
               disabled={signs.length <= 1}
             >
-              Nästa →
+              {getI18nValue('road-signs.next')} →
             </button>
           </div>
         </div>
@@ -206,7 +216,7 @@
       <div class="quiz-section">
         <div class="quiz-header">
           <h2>{getI18nValue('road-signs.what-does-this-mean')}</h2>
-          <div class="score">Poäng: {score}</div>
+          <div class="score">{getI18nValue('road-signs.score')}: {score}</div>
         </div>
         
         <div class="quiz-sign">
@@ -219,13 +229,13 @@
               class="quiz-option"
               onclick={() => handleQuizAnswer(option)}
             >
-              {option.name}
+              {getI18nValue(option.nameKey)}
             </button>
           {/each}
         </div>
         
         <button class="back-quiz-button" onclick={goBack}>
-          Avsluta quiz
+          {getI18nValue('road-signs.end-quiz')}
         </button>
       </div>
     {/if}

@@ -147,7 +147,6 @@
 
 <style>
   .clock-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .mode-toggle { display: flex; gap: 4px; }
   .tab { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); font-weight: 600; font-size: 0.8em; background: none; min-height: 36px; }
   .tab.active { background: #3498DB; color: white; border-color: #3498DB; }
 

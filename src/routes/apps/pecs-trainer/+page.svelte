@@ -285,7 +285,6 @@
 
 <style>
   .pecs-page { display: flex; flex-direction: column; min-height: 100dvh; position: relative; }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .phase-bar { display: flex; gap: 6px; padding: 12px 20px; justify-content: center; }
   .phase-btn {

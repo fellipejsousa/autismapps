@@ -164,8 +164,6 @@
 
 <style>
   .mat-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
-  .header-actions { display: flex; gap: 6px; }
   .icon-btn { width: 40px; height: 40px; font-size: 1.2em; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
   .icon-btn:hover { background: var(--bg-hover); }
 

@@ -1,15 +1,18 @@
-<script>
+<script lang="ts">
   import { speak } from '$lib/tts';
   import { playVehicleSound } from '$lib/audio.js';
   import { getPictogram } from '$lib/data/arasaac-data.js';
 
-  let { i18n = {}, onback = () => {} } = $props();
-  
-  
-  let selectedVehicle = $state(null);
+  type TranslationData = Record<string, any>;
+  type VehicleId = 'car' | 'bus' | 'truck' | 'bicycle' | 'ambulance' | 'police' | 'firetruck';
+  type Vehicle = { id: VehicleId; icon: string };
+  let { i18n = {}, onback = () => {} } = $props<{ i18n?: TranslationData; onback?: () => void }>();
+
+
+  let selectedVehicle = $state<Vehicle | null>(null);
   let showScenarios = $state(false);
-  
-  const vehicles = [
+
+  const vehicles: Vehicle[] = [
     { id: 'car', icon: 'car' },
     { id: 'bus', icon: 'bus' },
     { id: 'truck', icon: 'truck' },
@@ -18,42 +21,44 @@
     { id: 'police', icon: 'police' },
     { id: 'firetruck', icon: 'firetruck' }
   ];
-  
-  const vehicleScenarios = {
+
+  const vehicleScenarios: Record<VehicleId, string[]> = {
     car: ['stop', 'look', 'wait'],
     bus: ['wait', 'look', 'go'],
     truck: ['stop', 'wait', 'look'],
     bicycle: ['look', 'go', 'safe'],
     ambulance: ['stop', 'wait', 'look'],
-    police: ['stop', 'wait', 'look'], 
+    police: ['stop', 'wait', 'look'],
     firetruck: ['stop', 'wait', 'look']
   };
-  
-  function handleVehicleClick(vehicle) {
+
+  function handleVehicleClick(vehicle: Vehicle) {
     selectedVehicle = vehicle;
     const vehicleName = getNestedValue(i18n, `vehicles.${vehicle.id}`) || vehicle.id;
     speak(vehicleName);
     playVehicleSound(vehicle.id);
   }
-  
-  function playSound(vehicle) {
+
+  function playSound(vehicle: Vehicle) {
     playVehicleSound(vehicle.id);
     speak(getNestedValue(i18n, 'vehicles.listen') || 'Listen to the sound');
   }
-  
+
   function startScenarios() {
     showScenarios = true;
     speak(getNestedValue(i18n, 'vehicles.what-should-you-do') || 'What should you do?');
   }
-  
-  function handleScenarioAnswer(action) {
+
+  function handleScenarioAnswer(action: string) {
+    if (!selectedVehicle) return;
     const vehicleName = getNestedValue(i18n, `vehicles.${selectedVehicle.id}`) || selectedVehicle.id;
     const actionText = getNestedValue(i18n, `actions.${action}`) || action;
     speak(`${vehicleName}: ${actionText}`);
   }
-  
-  function getNestedValue(obj, path) {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+
+  function getNestedValue(obj: TranslationData, path: string): string | undefined {
+    const value = path.split('.').reduce<any>((current, key) => current?.[key], obj);
+    return typeof value === 'string' ? value : undefined;
   }
 </script>
 
@@ -64,20 +69,21 @@
       ← {getNestedValue(i18n, 'common.back') || 'Back'}
     </button>
   </div>
-  
+
   <div class="content">
-    {#if !selectedVehicle}
+    {#if selectedVehicle === null}
       <!-- Vehicle Selection Grid -->
       <div class="vehicle-grid">
         {#each vehicles as vehicle}
-          <button 
+          {@const pictogram = getPictogram(vehicle.icon)}
+          <button
             class="vehicle-card"
             onclick={() => handleVehicleClick(vehicle)}
           >
             <div class="vehicle-icon">
-              {#if getPictogram(vehicle.icon)}
-                <img 
-                  src={getPictogram(vehicle.icon).url} 
+              {#if pictogram}
+                <img
+                  src={pictogram.url}
                   alt={getNestedValue(i18n, `vehicles.${vehicle.id}`) || vehicle.id}
                   loading="lazy"
                 />
@@ -87,19 +93,20 @@
                 </div>
               {/if}
             </div>
-            
+
             <h3>{getNestedValue(i18n, `vehicles.${vehicle.id}`) || vehicle.id}</h3>
           </button>
         {/each}
       </div>
     {:else}
       <!-- Vehicle Detail View -->
+      {@const selectedPictogram = getPictogram(selectedVehicle.icon)}
       <div class="vehicle-detail">
         <div class="vehicle-info">
           <div class="large-vehicle-icon">
-            {#if getPictogram(selectedVehicle.icon)}
-              <img 
-                src={getPictogram(selectedVehicle.icon).url} 
+            {#if selectedPictogram}
+              <img
+                src={selectedPictogram.url}
                 alt={getNestedValue(i18n, `vehicles.${selectedVehicle.id}`) || selectedVehicle.id}
               />
             {:else}
@@ -108,33 +115,34 @@
               </div>
             {/if}
           </div>
-          
+
           <h2>{getNestedValue(i18n, `vehicles.${selectedVehicle.id}`) || selectedVehicle.id}</h2>
-          
+
           <div class="action-buttons">
-            <button class="sound-button" onclick={() => playSound(selectedVehicle)}>
+            <button class="sound-button" onclick={() => { if (selectedVehicle) playSound(selectedVehicle); }}>
               🔊 {getNestedValue(i18n, 'vehicles.listen') || 'Listen to the sound'}
             </button>
-            
+
             <button class="scenario-button" onclick={startScenarios}>
               {getNestedValue(i18n, 'vehicles.what-should-you-do') || 'What should you do?'}
             </button>
           </div>
         </div>
-        
+
         {#if showScenarios}
           <div class="scenarios">
             <h3>{getNestedValue(i18n, 'vehicles.what-should-you-do') || 'What should you do?'}</h3>
-            
+
             <div class="scenario-actions">
               {#each vehicleScenarios[selectedVehicle.id] as action}
-                <button 
+                {@const actionPictogram = getPictogram(action)}
+                <button
                   class="action-button"
                   onclick={() => handleScenarioAnswer(action)}
                 >
-                  {#if getPictogram(action)}
-                    <img 
-                      src={getPictogram(action).url} 
+                  {#if action !== 'safe' && actionPictogram}
+                    <img
+                      src={actionPictogram.url}
                       alt={getNestedValue(i18n, `actions.${action}`) || action}
                     />
                   {/if}
@@ -144,7 +152,7 @@
             </div>
           </div>
         {/if}
-        
+
         <div class="navigation">
           <button class="nav-button" onclick={() => { selectedVehicle = null; showScenarios = false; }}>
             ← {getNestedValue(i18n, 'common.back') || 'Back'}
@@ -361,11 +369,11 @@
     .vehicles-container {
       background: white;
     }
-    
+
     .vehicle-card, .vehicle-info, .scenarios {
       border: 2px solid #000;
     }
-    
+
     .action-button {
       border-color: #000;
     }
@@ -376,7 +384,7 @@
     .vehicle-card, .sound-button, .scenario-button, .action-button {
       transition: none;
     }
-    
+
     .vehicle-card:hover, .sound-button:hover, .scenario-button:hover, .action-button:hover {
       transform: none;
     }
@@ -388,12 +396,12 @@
       flex-direction: column;
       align-items: center;
     }
-    
+
     .sound-button, .scenario-button {
       width: 100%;
       max-width: 300px;
     }
-    
+
     .scenario-actions {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
