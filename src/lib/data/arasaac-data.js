@@ -2,6 +2,11 @@
 // against the catalog keyword metadata; null means there is no safe match.
 import { base } from '$app/paths';
 
+// Traffic-safety PNGs can be served with a long HTTP max-age. Bump this value
+// whenever a bundled pictogram is replaced so existing clients fetch the new
+// image instead of keeping an older file under the same URL.
+const PICTOGRAM_ASSET_REVISION = '2026-10-15';
+
 /** @type {Record<string, number | null>} */
 export const ARASAAC_IDS = {
   // Basic actions (validated)
@@ -48,7 +53,7 @@ export const ARASAAC_IDS = {
  * @returns {string} URL to pictogram
  */
 export function getArasaacUrl(id) {
-  return `${base}/pictograms/traffic-safety/${id}.png`;
+  return `${base}/pictograms/traffic-safety/${id}.png?v=${PICTOGRAM_ASSET_REVISION}`;
 }
 
 /**
