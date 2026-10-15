@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { t } from '$lib/i18n';
+  import { locale, t } from '$lib/i18n';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import { speak } from '$lib/tts';
@@ -12,33 +12,30 @@
   let newSound = $state('');
   let newLevel = $state(3);
   
-  // Exposure training
-  let exposureLevel = $state(1);
-  let exposurePlaying = $state(false);
-  
   const STRATEGIES = [
-    { emoji: '🎧', title: 'Hörselskydd', desc: 'Använd hörselskydd eller brusreducerande hörlurar i miljöer med mycket ljud.' },
-    { emoji: '🫁', title: 'Djupandning', desc: 'Andas in i 4 sekunder, håll i 4, andas ut i 6. Upprepas tills du känner dig lugnare.' },
-    { emoji: '🚪', title: 'Avbryta', desc: 'Det är helt okej att lämna ett rum om ljudet blir för mycket. Planera en flyktväg.' },
-    { emoji: '⏰', title: 'Förberedelse', desc: 'Veta i förväg att det kommer vara högt ljud hjälper. Förbered dig mentalt.' },
-    { emoji: '🎵', title: 'Ersättningsljud', desc: 'Lyssna på musik du gillar eller naturljud för att maskera obehagliga ljud.' },
-    { emoji: '🤲', title: 'Tryckstimulering', desc: 'Krama dig själv, bär tyngdväst eller håll i något mjukt för att lugna nervsystemet.' },
+    { emoji: '🎧', title: 'soundSensitivity.strategy.hearingProtection.title', desc: 'soundSensitivity.strategy.hearingProtection.description' },
+    { emoji: '🫁', title: 'soundSensitivity.strategy.breathing.title', desc: 'soundSensitivity.strategy.breathing.description' },
+    { emoji: '🚪', title: 'soundSensitivity.strategy.stepAway.title', desc: 'soundSensitivity.strategy.stepAway.description' },
+    { emoji: '⏰', title: 'soundSensitivity.strategy.prepare.title', desc: 'soundSensitivity.strategy.prepare.description' },
+    { emoji: '🎵', title: 'soundSensitivity.strategy.calmingSounds.title', desc: 'soundSensitivity.strategy.calmingSounds.description' },
+    { emoji: '🤲', title: 'soundSensitivity.strategy.deepPressure.title', desc: 'soundSensitivity.strategy.deepPressure.description' },
   ];
 
-  const EXPOSURE_SOUNDS = [
-    { name: 'Regn', emoji: '🌧️', level: 1 },
-    { name: 'Fågelkvitter', emoji: '🐦', level: 1 },
-    { name: 'Trafik', emoji: '🚗', level: 2 },
-    { name: 'Diskmaskin', emoji: '🍽️', level: 2 },
-    { name: 'Dammsugare', emoji: '🧹', level: 3 },
-    { name: 'Hund som skäller', emoji: '🐕', level: 3 },
-    { name: 'Brandlarm', emoji: '🔔', level: 4 },
-    { name: 'Fyrverkerier', emoji: '🎆', level: 4 },
+  const SOUNDS = [
+    { name: 'soundSensitivity.sound.rain', emoji: '🌧️', level: 1 },
+    { name: 'soundSensitivity.sound.birds', emoji: '🐦', level: 1 },
+    { name: 'soundSensitivity.sound.traffic', emoji: '🚗', level: 2 },
+    { name: 'soundSensitivity.sound.dishwasher', emoji: '🍽️', level: 2 },
+    { name: 'soundSensitivity.sound.vacuum', emoji: '🧹', level: 3 },
+    { name: 'soundSensitivity.sound.dog', emoji: '🐕', level: 3 },
+    { name: 'soundSensitivity.sound.alarm', emoji: '🔔', level: 4 },
+    { name: 'soundSensitivity.sound.fireworks', emoji: '🎆', level: 4 },
   ];
 
   function addDiaryEntry() {
     if (!newSound.trim()) return;
-    diaryEntries = [...diaryEntries, { sound: newSound.trim(), level: newLevel, date: new Date().toLocaleDateString('sv-SE') }];
+    const dateLocale = $locale === 'sv' ? 'sv-SE' : 'en-US';
+    diaryEntries = [...diaryEntries, { sound: newSound.trim(), level: newLevel, date: new Date().toLocaleDateString(dateLocale) }];
     newSound = '';
     newLevel = 3;
   }
@@ -51,45 +48,45 @@
 
 <div class="app">
   <header class="top-bar">
-    <button class="back-btn" onclick={goBack}>← Tillbaka</button>
-    <h1>🔊 Ljudkänslighet</h1>
+    <button class="back-btn" onclick={goBack}>← {$t('common.back')}</button>
+    <h1>🔊 {$t('soundSensitivity.title')}</h1>
   </header>
 
   {#if currentView === 'menu'}
     <div class="menu" transition:fade>
-      <p class="intro">Här kan du logga ljud som stör, lära dig strategier och öva på att hantera ljud.</p>
+      <p class="intro">{$t('soundSensitivity.intro')}</p>
       <div class="cards">
         <button class="card" onclick={() => currentView = 'diary'}>
           <span class="card-emoji">📓</span>
-          <span class="card-title">Ljuddagbok</span>
-          <span class="card-desc">Logga vilka ljud som stör dig</span>
+          <span class="card-title">{$t('soundSensitivity.diary.title')}</span>
+          <span class="card-desc">{$t('soundSensitivity.diary.cardDescription')}</span>
         </button>
         <button class="card" onclick={() => currentView = 'strategies'}>
           <span class="card-emoji">💡</span>
-          <span class="card-title">Strategier</span>
-          <span class="card-desc">Tips för att hantera ljud</span>
+          <span class="card-title">{$t('soundSensitivity.strategies.title')}</span>
+          <span class="card-desc">{$t('soundSensitivity.strategies.cardDescription')}</span>
         </button>
         <button class="card" onclick={() => currentView = 'exposure'}>
           <span class="card-emoji">🎚️</span>
-          <span class="card-title">Exponering</span>
-          <span class="card-desc">Öva gradvis med ljud</span>
+          <span class="card-title">{$t('soundSensitivity.soundGuide.title')}</span>
+          <span class="card-desc">{$t('soundSensitivity.soundGuide.cardDescription')}</span>
         </button>
       </div>
     </div>
   {:else if currentView === 'diary'}
     <div class="diary" transition:fade>
-      <h2>📓 Ljuddagbok</h2>
+      <h2>📓 {$t('soundSensitivity.diary.title')}</h2>
       <div class="diary-form">
-        <input type="text" bind:value={newSound} placeholder="Vilket ljud störde dig?" class="input" />
+        <input type="text" bind:value={newSound} placeholder={$t('soundSensitivity.diary.placeholder')} aria-label={$t('soundSensitivity.diary.placeholder')} class="input" />
         <div class="level-picker">
-          <span>Obehag:</span>
+          <span>{$t('soundSensitivity.diary.discomfort')}</span>
           {#each [1,2,3,4,5] as lvl}
-            <button class="level-btn" class:active={newLevel === lvl} onclick={() => newLevel = lvl}>
+            <button class="level-btn" class:active={newLevel === lvl} aria-label={$t('soundSensitivity.diary.level', { level: String(lvl) })} aria-pressed={newLevel === lvl} onclick={() => newLevel = lvl}>
               {lvl === 1 ? '😊' : lvl === 2 ? '😐' : lvl === 3 ? '😟' : lvl === 4 ? '😣' : '😱'}
             </button>
           {/each}
         </div>
-        <button class="primary-btn" onclick={addDiaryEntry} disabled={!newSound.trim()}>Lägg till</button>
+        <button class="primary-btn" onclick={addDiaryEntry} disabled={!newSound.trim()}>{$t('soundSensitivity.diary.add')}</button>
       </div>
       {#if diaryEntries.length > 0}
         <div class="entries">
@@ -102,19 +99,19 @@
           {/each}
         </div>
       {:else}
-        <p class="empty">Inga ljud loggade än. Börja med att skriva in ett ljud ovan.</p>
+        <p class="empty">{$t('soundSensitivity.diary.empty')}</p>
       {/if}
     </div>
   {:else if currentView === 'strategies'}
     <div class="strategies" transition:fade>
-      <h2>💡 Strategier</h2>
+      <h2>💡 {$t('soundSensitivity.strategies.title')}</h2>
       <div class="strategy-list">
         {#each STRATEGIES as s}
-          <button class="strategy-card" onclick={() => speak(s.title + '. ' + s.desc)}>
+          <button class="strategy-card" onclick={() => speak($t(s.title) + '. ' + $t(s.desc))}>
             <span class="strategy-emoji">{s.emoji}</span>
             <div>
-              <strong>{s.title}</strong>
-              <p>{s.desc}</p>
+                <strong>{$t(s.title)}</strong>
+                <p>{$t(s.desc)}</p>
             </div>
           </button>
         {/each}
@@ -122,15 +119,14 @@
     </div>
   {:else if currentView === 'exposure'}
     <div class="exposure" transition:fade>
-      <h2>🎚️ Exponeringsträning</h2>
-      <p>Börja med lugna ljud och öka gradvis. Tryck på ett ljud för att lyssna.</p>
+      <h2>🎚️ {$t('soundSensitivity.soundGuide.title')}</h2>
+      <p>{$t('soundSensitivity.soundGuide.description')}</p>
       <div class="sound-grid">
-        {#each EXPOSURE_SOUNDS as sound}
-          <button class="sound-card" class:locked={sound.level > exposureLevel + 1}
-                  onclick={() => speak(sound.name)}>
+        {#each SOUNDS as sound}
+          <button class="sound-card" onclick={() => speak($t(sound.name))}>
             <span class="sound-emoji">{sound.emoji}</span>
-            <span class="sound-name">{sound.name}</span>
-            <span class="sound-level">Nivå {sound.level}</span>
+            <span class="sound-name">{$t(sound.name)}</span>
+            <span class="sound-level">{$t('soundSensitivity.soundGuide.level', { level: String(sound.level) })}</span>
           </button>
         {/each}
       </div>
@@ -173,7 +169,6 @@
   .sound-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .sound-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 20px; background: white; border: 2px solid #e0e0e0; border-radius: 14px; cursor: pointer; min-height: 100px; }
   .sound-card:hover { border-color: #9C27B0; }
-  .sound-card.locked { opacity: 0.4; pointer-events: none; }
   .sound-emoji { font-size: 2.5rem; }
   .sound-name { font-weight: 600; }
   .sound-level { font-size: 0.8rem; color: #999; }
