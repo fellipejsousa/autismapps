@@ -4,13 +4,19 @@
 /// <reference lib="webworker" />
 
 import { build, files, version } from '$service-worker';
+import { TRAFFIC_SAFETY_PICTOGRAM_REVISION } from '$lib/data/pictogram-cache.js';
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = `cache-${version}`;
 
+const versionedPictogramAssets = files
+	.filter((file) => /\/pictograms\/traffic-safety\/\d+\.png$/.test(file))
+	.map((file) => `${file}?v=${TRAFFIC_SAFETY_PICTOGRAM_REVISION}`);
+
 const ASSETS = [
   ...build,
-  ...files
+	...files,
+	...versionedPictogramAssets
 ];
 
 sw.addEventListener('install', (event) => {
