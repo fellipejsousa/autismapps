@@ -56,12 +56,11 @@
     }
   ];
 
-  // Activity cards use ARASAAC pictograms where the motif is clear. For
-  // "safe places" and "reflectors", the available catalog IDs are ambiguous;
-  // use only a clear catalog match. The vest is a general visibility cue,
-  // not a promise that every vest is reflective.
+  // Activity cards use ARASAAC pictograms where the motif is clear. A house is
+  // a familiar safe-place cue; the vest represents being visible, not a claim
+  // that every vest is reflective.
   function pictogramFor(activity: Activity) {
-    if (activity.id === 'safe-places') return getPictogram('safe');
+    if (activity.id === 'safe-places') return getPictogram('safePlace');
     if (activity.id === 'reflectors') return getPictogram('reflector');
     return getPictogram(activity.icon);
   }

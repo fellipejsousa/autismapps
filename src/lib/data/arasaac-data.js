@@ -25,7 +25,7 @@ export const ARASAAC_IDS = {
   sidewalk: 2247,
   road: 2302,
   parking: 24755,
-  safe: 6964, // House as a familiar safe-place cue
+  safePlace: 6964, // House as a familiar safe-place cue; do not use lookup "safe" (strongbox)
   dangerous: 25315, // Danger warning sign (validated)
   
   // Traffic elements

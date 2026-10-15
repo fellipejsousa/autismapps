@@ -35,6 +35,11 @@ const byId = new Map(catalog.map((pictogram) => [String(pictogram._id), pictogra
 const errors = [];
 let uniqueIds = new Set();
 
+// Keep the traffic-safety tile on the locally bundled house illustration.
+// The generic "safe" lookup is a strongbox, which is misleading for this app.
+if (!byId.has('6964')) errors.push('safe-place tile: ARASAAC house pictogram 6964 is missing from the catalog');
+if (!trafficFiles.includes('6964.png')) errors.push('safe-place tile: expected local house pictogram 6964.png');
+
 for (const [term, entry] of Object.entries(lookup)) {
   const pictogram = byId.get(String(entry.id));
   uniqueIds.add(entry.id);
