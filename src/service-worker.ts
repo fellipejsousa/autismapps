@@ -48,21 +48,53 @@ sw.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       (async () => {
+        let cache: Cache | undefined;
+        try {
+          cache = await caches.open(CACHE);
+        } catch {}
+
+        // Keep query strings (which may contain a child's name or avatar) out
+        // of the cache key. The route shell is identical without them, and
+        // SvelteKit can still read the current URL after the cached page loads.
+        const cacheUrl = new URL(event.request.url);
+        cacheUrl.search = '';
+        cacheUrl.hash = '';
+        const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
+
         try {
           // Try network — GitHub Pages returns 404 with SPA HTML, which is fine
           const response = await fetch(event.request);
-          // Accept any response that has HTML body (including 404 from GH Pages)
+          // Cache successful HTML documents so previously visited routes remain
+          // available offline. Do not cache error pages or query-string data.
+          if (
+            cache &&
+            response.status === 200 &&
+            response.headers.get('content-type')?.includes('text/html') &&
+            new URL(response.url || event.request.url).origin === location.origin
+          ) {
+            try {
+              await cache.put(cacheKey, response.clone());
+            } catch {}
+          }
+          // Accept any response below 500 (including the GitHub Pages SPA fallback).
           if (response.status < 500) {
             return addCoopCoep(response);
           }
         } catch {}
 
-        // Truly offline: serve cached index.html as SPA shell
-        const cached =
-          await caches.match('/launcher/index.html') ||
-          await caches.match('/launcher/') ||
-          await caches.match('/index.html') ||
-          await caches.match('/');
+        // Truly offline: serve this route if it was visited before, then fall
+        // back to the launcher shell for routes without a cached document.
+        let cached: Response | undefined;
+        if (cache) {
+          try {
+            cached =
+              (await cache.match(cacheKey)) ||
+              (await cache.match('/launcher/index.html')) ||
+              (await cache.match('/launcher/')) ||
+              (await cache.match('/index.html')) ||
+              (await cache.match('/'));
+          } catch {}
+        }
         if (cached) return addCoopCoep(cached);
 
         return new Response('<html><body><h1>Offline</h1><p>Anslut till internet och försök igen.</p></body></html>', {
