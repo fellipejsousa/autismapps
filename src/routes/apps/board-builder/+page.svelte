@@ -44,9 +44,15 @@
   async function doSearch() {
     if (!searchQuery.trim()) return;
     searching = true;
-    const lang = get(locale);
-    searchResults = await searchPictograms(searchQuery, lang);
-    searching = false;
+    searchResults = [];
+    try {
+      const lang = get(locale);
+      searchResults = await searchPictograms(searchQuery, lang);
+    } catch (error) {
+      console.error('Pictogram search failed', error);
+    } finally {
+      searching = false;
+    }
   }
 
   function selectCell(index: number) {

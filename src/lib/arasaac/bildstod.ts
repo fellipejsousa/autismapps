@@ -4,10 +4,8 @@
  * Hosted at autismappar.se/bildstod
  */
 
-import { base } from '$app/paths';
-
-const BILDSTOD_API = 'https://autismappar.se/bildstod/api/pictograms.json';
-const BILDSTOD_BASE = 'https://autismappar.se/bildstod';
+const REMOTE_BILDSTOD_BASE = 'https://autismappar.se/bildstod/bildstod-service';
+const BILDSTOD_API = `${REMOTE_BILDSTOD_BASE}/api/pictograms.json`;
 
 export interface BildstodPictogram {
   id: number;
@@ -27,29 +25,47 @@ interface BildstodData {
 
 let cache: BildstodData | null = null;
 
+function isBildstodData(value: unknown): value is BildstodData {
+  if (!value || typeof value !== 'object') return false;
+  const pictograms = (value as { pictograms?: unknown }).pictograms;
+  return Array.isArray(pictograms) && pictograms.every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const pictogram = item as Partial<BildstodPictogram>;
+    return typeof pictogram.id === 'number'
+      && Array.isArray(pictogram.keywords?.sv)
+      && Array.isArray(pictogram.keywords?.en)
+      && Array.isArray(pictogram.categories)
+      && typeof pictogram.slug === 'string'
+      && typeof pictogram.files?.png_500 === 'string';
+  });
+}
+
+async function fetchWithTimeout(url: string, timeoutMs = 1500): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 /**
  * Load the bildstöd pictogram catalog.
- * Tries local base path first (for offline/PWA), falls back to remote.
+ * Loads the catalog from the matching remote API.
  */
 export async function loadBildstod(): Promise<BildstodData> {
   if (cache) return cache;
   
-  // Try local copy first (bundled in build)
   try {
-    const res = await fetch(`${base}/bildstod/pictograms.json`);
+    const res = await fetchWithTimeout(BILDSTOD_API);
     const ct = res.headers.get('content-type') || '';
     if (res.ok && ct.includes('json')) {
-      cache = await res.json();
-      return cache!;
-    }
-  } catch {}
-  
-  // Fallback to remote API
-  try {
-    const res = await fetch(BILDSTOD_API);
-    if (res.ok) {
-      cache = await res.json();
-      return cache!;
+      const data: unknown = await res.json();
+      if (isBildstodData(data)) {
+        cache = data;
+        return cache;
+      }
     }
   } catch {}
   
@@ -77,7 +93,7 @@ export async function searchBildstod(
     let matchedKeyword = '';
     
     // Check Swedish keywords
-    for (const kw of p.keywords.sv) {
+    for (const kw of p.keywords.sv ?? []) {
       const kwLower = kw.toLowerCase();
       if (kwLower === q) {
         score = 100; // Exact match
@@ -94,7 +110,7 @@ export async function searchBildstod(
     
     // Check English keywords (lower priority)
     if (score === 0) {
-      for (const kw of p.keywords.en) {
+      for (const kw of p.keywords.en ?? []) {
         const kwLower = kw.toLowerCase();
         if (kwLower === q) {
           score = 70;
@@ -109,7 +125,7 @@ export async function searchBildstod(
     
     // Check categories and tags
     if (score === 0) {
-      const allMeta = [...p.categories, ...p.tags, p.slug].join(' ').toLowerCase();
+      const allMeta = [...(p.categories ?? []), ...(p.tags ?? []), p.slug ?? ''].join(' ').toLowerCase();
       if (allMeta.includes(q)) {
         score = 20;
         matchedKeyword = p.keywords.sv[0];
@@ -120,7 +136,7 @@ export async function searchBildstod(
       results.push({
         id: p.id >= 900000 ? p.id : p.id + 900000, // Offset only if not already offset
         keyword: matchedKeyword,
-        url: `${BILDSTOD_BASE}/${p.files.png_500}`,
+        url: `${REMOTE_BILDSTOD_BASE}/${p.files.png_500}`,
         slug: p.slug,
         source: 'bildstod' as const,
         score
@@ -146,5 +162,5 @@ export async function getBildstodBySlug(slug: string): Promise<BildstodPictogram
  */
 export function getBildstodUrl(slug: string, format: 'svg' | 'png' = 'png'): string {
   const ext = format === 'svg' ? `${slug}.svg` : `${slug}.png`;
-  return `${BILDSTOD_BASE}/pictograms/${ext}`;
+  return `${REMOTE_BILDSTOD_BASE}/pictograms/${ext}`;
 }

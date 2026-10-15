@@ -13,12 +13,16 @@ export async function loadSvLookup(): Promise<Record<string, { sv: string; id: n
   try {
     const res = await fetch(`${base}/arasaac-sv.json`);
     if (res.ok) {
-      cache = await res.json();
-      return cache!;
+      const data: unknown = await res.json();
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+        cache = data as Record<string, { sv: string; id: number }>;
+        return cache;
+      }
     }
   } catch {}
-  cache = {};
-  return cache;
+  // Do not memoize a failed fetch: a temporary offline or hosting error should
+  // not permanently disable Swedish pictogram search for this page session.
+  return {};
 }
 
 /**

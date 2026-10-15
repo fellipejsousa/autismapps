@@ -4,6 +4,16 @@ import { searchBildstod } from './bildstod';
 const API_BASE = 'https://api.arasaac.org/v1';
 const CACHE_NAME = 'arasaac-pictograms';
 
+async function fetchWithTimeout(url: string, timeoutMs = 5000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export interface Pictogram {
   _id: number;
   keywords: { keyword: string; type: number; meaning?: string }[];
@@ -86,7 +96,7 @@ export async function searchPictograms(
   // === STEP 3: Fallback to ARASAAC API (if no local results) ===
   try {
     const searchLang = lang === 'sv' ? 'en' : (lang || 'en');
-    const res = await fetch(`${API_BASE}/pictograms/${searchLang}/search/${encodeURIComponent(query)}`);
+    const res = await fetchWithTimeout(`${API_BASE}/pictograms/${searchLang}/search/${encodeURIComponent(query)}`);
     if (!res.ok) return results.slice(0, 50);
     const data: Pictogram[] = await res.json();
     const lookup = lang === 'sv' ? await loadSvLookup() : null;

@@ -1,5 +1,6 @@
 import { writable, derived, get } from 'svelte/store';
 import en from './messages/en.json';
+import sv from './messages/sv.json';
 
 type TranslationCatalog = Record<string, string>;
 
@@ -18,29 +19,24 @@ function flattenCatalog(value: unknown, prefix = '', result: TranslationCatalog 
   return result;
 }
 
-const translations: Record<string, TranslationCatalog> = { en: flattenCatalog(en) };
-const loadedLocales = new Set(['en']);
+const translations: Record<string, TranslationCatalog> = {
+  en: flattenCatalog(en),
+  sv: flattenCatalog(sv)
+};
 
 export const locale = writable('en');
 export const fallbackLocale = 'en';
 
 export async function loadLocale(lang: string) {
-  if (loadedLocales.has(lang)) return;
-  try {
-    const mod = await import(`./messages/${lang}.json`);
-    translations[lang] = flattenCatalog(mod.default);
-    loadedLocales.add(lang);
-  } catch {
-    console.warn(`Locale ${lang} not found, falling back to ${fallbackLocale}`);
-  }
+  // Both supported catalogs are bundled up front so the initial locale change
+  // never waits on a dynamic import after the launcher has started rendering.
+  return translations[lang.toLowerCase().startsWith('sv') ? 'sv' : 'en'];
 }
 
 export function setLocale(lang: string) {
   const selectedLanguage = lang.toLowerCase().startsWith('sv') ? 'sv' : 'en';
-  loadLocale(selectedLanguage).then(() => {
-    locale.set(selectedLanguage);
-    if (typeof document !== 'undefined') document.documentElement.lang = selectedLanguage;
-  });
+  locale.set(selectedLanguage);
+  if (typeof document !== 'undefined') document.documentElement.lang = selectedLanguage;
 }
 
 export const t = derived(locale, ($locale) => {

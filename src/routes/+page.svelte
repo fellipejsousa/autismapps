@@ -55,6 +55,21 @@
   });
 
   function chooseLanguage(code: string) {
+    if (browser) {
+      const hostname = window.location.hostname.toLowerCase();
+      const isProductionDomain = hostname === 'autismappar.se'
+        || hostname.endsWith('.autismappar.se')
+        || hostname === 'autismapps.online'
+        || hostname.endsWith('.autismapps.online');
+      const targetHost = code === 'sv' ? 'autismappar.se' : 'autismapps.online';
+      if (isProductionDomain && hostname !== targetHost) {
+        const target = new URL(window.location.href);
+        target.protocol = 'https:';
+        target.host = targetHost;
+        window.location.assign(target.toString());
+        return;
+      }
+    }
     setLocale(code);
     if (browser) localStorage.setItem('locale', code);
     langOpen = false;
