@@ -1,0 +1,13 @@
+{
+  "name": "Autismapps",
+  "short_name": "Autismapps",
+  "description": "Visual tools for communication, routines, time and emotions.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F8F8F4",
+  "theme_color": "#315A49",
+  "orientation": "any",
+  "categories": ["education", "health", "lifestyle"],
+  "icons": [{"src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}],
+  "scope": "."
+}

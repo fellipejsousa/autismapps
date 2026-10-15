@@ -1,0 +1,13 @@
+{
+  "name": "Autismappar",
+  "short_name": "Autismappar",
+  "description": "Visuellt stöd för kommunikation, rutiner, tid och känslor.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F8F8F4",
+  "theme_color": "#315A49",
+  "orientation": "any",
+  "categories": ["education", "health", "lifestyle"],
+  "icons": [{"src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}],
+  "scope": "."
+}

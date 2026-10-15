@@ -17,7 +17,7 @@
   <div class="grid-dialog" role="dialog" aria-modal="true" aria-label={$t('th.selectActivity')}>
     <div class="grid-header">
       <h2>{$t('th.selectActivity')}</h2>
-      <button class="close-btn" onclick={onClose} aria-label="Close">✕</button>
+      <button class="close-btn" onclick={onClose} aria-label={$t('th.close')}>✕</button>
     </div>
     <div class="activity-grid">
       {#each ACTIVITIES as activity}

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
+  import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
   import { speak, stop } from '$lib/tts';
   import { getBoards, type Board, type BoardCell } from '$lib/storage';
@@ -132,7 +133,7 @@
         {:else}
           <div class="empty-state">
             <p>{$t("talk.no_boards")}</p>
-            <a href="/apps/board-builder" class="link-btn">{$t("talk.open_builder")}</a>
+            <a href={base + '/apps/board-builder'} class="link-btn">{$t("talk.open_builder")}</a>
           </div>
         {/each}
       </div>

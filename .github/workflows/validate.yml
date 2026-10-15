@@ -1,0 +1,27 @@
+name: Validate web app
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm run audit:pictograms
+      - run: npm run build:launcher
+      - run: npm run build
+        env:
+          NODE_OPTIONS: '--unhandled-rejections=warn'

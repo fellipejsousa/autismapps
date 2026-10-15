@@ -3,22 +3,34 @@
   import { speak } from '$lib/tts';
   import { ACTIVITIES, getArasaacUrl, ARASAAC_IDS } from '$lib/data/transition-helper';
   import type { SavedTransition } from '$lib/data/transition-helper';
-  import { onMount } from 'svelte';
 
   interface Props {
     onUse: (firstId: string, thenId: string) => void;
+    refreshKey?: number;
   }
 
-  let { onUse }: Props = $props();
+  let { onUse, refreshKey = 0 }: Props = $props();
 
   let saved = $state<SavedTransition[]>([]);
-
-  onMount(() => {
+  $effect(() => {
+    void refreshKey;
     loadSaved();
   });
 
   function loadSaved() {
-    saved = JSON.parse(localStorage.getItem('th-saved-transitions') || '[]');
+    try {
+      const stored: unknown = JSON.parse(localStorage.getItem('th-saved-transitions') || '[]');
+      saved = Array.isArray(stored)
+        ? stored.filter((item: unknown): item is SavedTransition => {
+            if (!item || typeof item !== 'object') return false;
+            const record = item as Record<string, unknown>;
+            return typeof record.id === 'string' && typeof record.firstId === 'string' &&
+              typeof record.thenId === 'string' && typeof record.createdAt === 'number';
+          })
+        : [];
+    } catch {
+      saved = [];
+    }
   }
 
   function deleteSaved(id: string) {

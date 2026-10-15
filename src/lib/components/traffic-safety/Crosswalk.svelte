@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
   import { speak } from '$lib/tts';
 
-  let { i18n = {}, onback } = $props();
+  type TranslationData = Record<string, any>;
+  let { i18n = {}, onback = () => {} } = $props<{ i18n?: TranslationData; onback?: () => void }>();
 
   let currentStep = $state(0);
   let isPracticeMode = $state(false);
@@ -17,8 +18,16 @@
     { key: 'step5', action: 'walk' }
   ];
 
-  function getI18nValue(key) {
-    return key.split('.').reduce((obj, k) => obj?.[k], i18n) || key;
+  function getI18nValue(key: string): string {
+    const value = key.split('.').reduce<any>((obj, segment) => obj?.[segment], i18n);
+    return typeof value === 'string' ? value : key;
+  }
+
+  function formatMessage(key: string, values: Record<string, string | number>): string {
+    return Object.entries(values).reduce(
+      (message, [name, value]) => message.replaceAll(`{${name}}`, String(value)),
+      getI18nValue(key)
+    );
   }
 
   function startPractice() {
@@ -42,7 +51,7 @@
     }
   }
 
-  function handleQuizAnswer(isSafe) {
+  function handleQuizAnswer(isSafe: boolean) {
     const correctAnswer = !carVisible; // Safe when no car
     if (isSafe === correctAnswer) {
       score++;
@@ -79,7 +88,7 @@
       <!-- Main menu -->
       <div class="menu-section">
         <div class="steps-overview">
-          <h2>Så här korsar du gatan säkert:</h2>
+          <h2>{getI18nValue('crosswalk.directions-title')}</h2>
           <ol class="steps-list">
             {#each steps as step, index}
               <li class="step-item">
@@ -121,13 +130,13 @@
         <div class="step-display">
           <div class="current-step">
             <h3>{getI18nValue(`crosswalk.${steps[currentStep].key}`)}</h3>
-            <div class="step-indicator">
-              Steg {currentStep + 1} av {steps.length}
-            </div>
+              <div class="step-indicator">
+                {formatMessage('crosswalk.step-progress', { current: currentStep + 1, total: steps.length })}
+              </div>
           </div>
           
           <button class="next-button" onclick={nextStep}>
-            {currentStep < steps.length - 1 ? 'Nästa steg' : 'Klar!'}
+            {currentStep < steps.length - 1 ? getI18nValue('crosswalk.next-step') : getI18nValue('crosswalk.finish')}
           </button>
         </div>
       </div>
@@ -168,10 +177,10 @@
             </button>
           </div>
           
-          <div class="score">Poäng: {score}</div>
+          <div class="score">{getI18nValue('crosswalk.score')}: {score}</div>
           
           <button class="reset-button" onclick={reset}>
-            Börja om
+            {getI18nValue('crosswalk.restart')}
           </button>
         </div>
       </div>

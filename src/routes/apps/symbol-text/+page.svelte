@@ -204,9 +204,6 @@
   .cnt { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
   .cr { text-align: center; padding: 12px; font-size: .75em; opacity: .5; }
 
-  .size-btns { display: flex; gap: 4px; }
-  .size-btns button { padding: 4px 8px; border: 1px solid var(--border, #ccc); border-radius: 6px; background: var(--bg-card, #fff); cursor: pointer; font-weight: 600; }
-  .size-btns button.active { background: #3498DB; color: white; border-color: #3498DB; }
 
   .input-area { background: var(--bg-card, #fff); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
   textarea { width: 100%; padding: 12px; border: 2px solid var(--border, #ddd); border-radius: 10px; font-size: 1em; font-family: inherit; resize: vertical; background: var(--bg, #f5f5f5); color: var(--text, #1a1a2e); }
@@ -219,7 +216,6 @@
   .save-btn:hover { border-color: #3498DB; }
   .clear-btn:hover { border-color: #E74C3C; }
 
-  .examples { }
   .example-list { display: flex; flex-direction: column; gap: 6px; }
   .example-btn { padding: 10px 14px; background: var(--bg-card, #fff); border: 1px solid var(--border, #ddd); border-radius: 10px; text-align: left; cursor: pointer; font-style: italic; }
   .example-btn:hover { border-color: #3498DB; }

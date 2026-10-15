@@ -1,16 +1,17 @@
-<script>
+<script lang="ts">
   import { fade, scale } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
 
-  let { children } = $props();
+  type Particle = { id: number; x: number; y: number; vx: number; vy: number; color: string; size: number; rotation: number; rotSpeed: number };
+  let { children } = $props<{ children: import('svelte').Snippet }>();
 
-  let particles = $state([]);
-  let animFrame;
+  let particles = $state<Particle[]>([]);
+  let animFrame: number | undefined;
 
   onMount(() => {
     // Create confetti particles
     const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63', '#ff9800'];
-    const newParticles = [];
+    const newParticles: Particle[] = [];
     for (let i = 0; i < 30; i++) {
       newParticles.push({
         id: i,
@@ -43,7 +44,9 @@
 
     // Play celebration sound via Web Audio
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const AudioContextClass = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const ctx = new AudioContextClass();
       const notes = [523, 659, 784, 1047];
       notes.forEach((freq, i) => {
         const osc = ctx.createOscillator();

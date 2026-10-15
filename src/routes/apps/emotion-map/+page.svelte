@@ -288,7 +288,6 @@
 
 <style>
   .emotion-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
   .icon-btn { width: 40px; height: 40px; font-size: 1.2em; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
 
   .zones { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; padding: 16px; flex: 1; }

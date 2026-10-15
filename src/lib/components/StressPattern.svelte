@@ -31,7 +31,7 @@
         class:small={showAnswer && i !== stressIndex}
         class:neutral={!showAnswer}
         style={showAnswer && i === stressIndex ? 'background: #E91E63' : showAnswer ? 'background: #3498DB' : ''}
-      />
+      ></div>
     {/each}
   </div>
 

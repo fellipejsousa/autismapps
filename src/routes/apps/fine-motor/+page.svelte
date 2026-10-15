@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -12,7 +12,12 @@
   import PinchSpread from '$lib/components/PinchSpread.svelte';
   import DrawingChallenge from '$lib/components/DrawingChallenge.svelte';
 
-  const EXERCISES = [
+  type ExerciseId = 'tapping' | 'tracing' | 'pattern' | 'connect' | 'pinch' | 'drawing';
+  type Exercise = { id: ExerciseId; icon: string; key: string };
+  type ExerciseProgress = { stars: number; best: number | null };
+  type CompletionDetail = { exerciseId: string; stars: number; score: number };
+
+  const EXERCISES: Exercise[] = [
     { id: 'tapping', icon: '👆', key: 'fineMotor.tapping' },
     { id: 'tracing', icon: '✏️', key: 'fineMotor.tracing' },
     { id: 'pattern', icon: '🔵', key: 'fineMotor.pattern' },
@@ -21,32 +26,39 @@
     { id: 'drawing', icon: '🎨', key: 'fineMotor.drawing' },
   ];
 
-  let activeExercise = $state(null);
-  let progress = $state(loadProgress());
+  let activeExercise = $state<ExerciseId | null>(null);
+  let progress = $state<Record<string, ExerciseProgress>>(loadProgress());
 
-  function loadProgress() {
+  function loadProgress(): Record<string, ExerciseProgress> {
     if (typeof localStorage === 'undefined') return {};
     try {
-      return JSON.parse(localStorage.getItem('fine-motor-progress') || '{}');
+      const stored: unknown = JSON.parse(localStorage.getItem('fine-motor-progress') || '{}');
+      if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+      return Object.fromEntries(Object.entries(stored).filter((entry): entry is [string, ExerciseProgress] => {
+        const value = entry[1];
+        return Boolean(value) && typeof value === 'object' &&
+          typeof (value as ExerciseProgress).stars === 'number' &&
+          ((value as ExerciseProgress).best === null || typeof (value as ExerciseProgress).best === 'number');
+      }));
     } catch { return {}; }
   }
 
-  function saveProgress(p) {
+  function saveProgress(p: Record<string, ExerciseProgress>) {
     progress = p;
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('fine-motor-progress', JSON.stringify(p));
     }
   }
 
-  function getStars(exerciseId) {
+  function getStars(exerciseId: ExerciseId) {
     return progress[exerciseId]?.stars || 0;
   }
 
-  function getBest(exerciseId) {
+  function getBest(exerciseId: ExerciseId) {
     return progress[exerciseId]?.best || null;
   }
 
-  function handleComplete(detail) {
+  function handleComplete(detail: CompletionDetail) {
     const { exerciseId, stars, score } = detail;
     const current = progress[exerciseId] || { stars: 0, best: null };
     const newStars = Math.max(current.stars, stars);
@@ -55,9 +67,9 @@
   }
 
   // Web Audio feedback
-  function playSound(type) {
+  function playSound(type: 'tap' | 'success' | 'error') {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = new window.AudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -124,17 +136,17 @@
         {/each}
       </div>
     {:else if activeExercise === 'tapping'}
-      <FingerTapping {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <FingerTapping {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {:else if activeExercise === 'tracing'}
-      <TracingPaths {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <TracingPaths {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {:else if activeExercise === 'pattern'}
-      <PatternCopy {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <PatternCopy {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {:else if activeExercise === 'connect'}
-      <ConnectDots {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <ConnectDots {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {:else if activeExercise === 'pinch'}
-      <PinchSpread {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <PinchSpread {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {:else if activeExercise === 'drawing'}
-      <DrawingChallenge {playSound} oncomplete={(e) => handleComplete(e.detail)} />
+      <DrawingChallenge {playSound} oncomplete={(e: { detail: CompletionDetail }) => handleComplete(e.detail)} />
     {/if}
   </main>
 </div>

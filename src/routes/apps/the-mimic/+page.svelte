@@ -151,8 +151,8 @@
 
     <!-- Speed control -->
     <div class="speed-control">
-      <label>{$t('theMimic.speed')}: {speechRate.toFixed(1)}x</label>
-      <input type="range" min="0.3" max="1.0" step="0.1" bind:value={speechRate} />
+      <label for="the-mimic-speed">{$t('theMimic.speed')}: {speechRate.toFixed(1)}x</label>
+      <input id="the-mimic-speed" type="range" min="0.3" max="1.0" step="0.1" bind:value={speechRate} />
       <div class="speed-labels">
         <span>{$t('theMimic.slower')}</span>
         <span>{$t('theMimic.faster')}</span>

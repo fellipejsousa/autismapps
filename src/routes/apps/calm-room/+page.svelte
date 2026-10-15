@@ -458,7 +458,6 @@
     display: flex; flex-direction: column; min-height: 100dvh;
     transition: background 0.5s ease;
   }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .activities-grid {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

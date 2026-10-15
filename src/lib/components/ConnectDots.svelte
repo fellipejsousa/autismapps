@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade } from 'svelte/transition';
   import { createEventDispatcher } from 'svelte';
@@ -68,8 +68,8 @@
   let gameState = $state('idle');
   let currentPicIdx = $state(0);
   let connectedCount = $state(0);
-  let lines = $state([]);
-  let svgEl;
+  type Line = { x1: number; y1: number; x2: number; y2: number };
+  let lines = $state<Line[]>([]);
 
   let currentPic = $derived(PICTURES[currentPicIdx]);
 
@@ -79,7 +79,7 @@
     gameState = 'playing';
   }
 
-  function tapDot(idx) {
+  function tapDot(idx: number) {
     if (gameState !== 'playing') return;
     if (idx !== connectedCount) {
       playSound('error');
@@ -145,7 +145,7 @@
       <span>{connectedCount}/{currentPic.dots.length}</span>
     </div>
     <div class="svg-wrapper">
-      <svg bind:this={svgEl} viewBox="0 0 400 400" class="dot-svg">
+      <svg viewBox="0 0 400 400" class="dot-svg">
         <!-- Connected lines -->
         {#each lines as line}
           <line
@@ -160,6 +160,7 @@
             class:active={idx === connectedCount}
             class:done={idx < connectedCount}
             onclick={() => tapDot(idx)}
+            onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); tapDot(idx); } }}
             role="button"
             tabindex="0"
             style="cursor: pointer"

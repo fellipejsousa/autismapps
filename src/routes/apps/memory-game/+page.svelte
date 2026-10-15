@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -7,25 +7,27 @@
   import { fade } from 'svelte/transition';
   import { awardStar, GoldStarBurst } from '$lib/rewards';
 
-  const THEMES = [
+  type Theme = { id: string; icon: string; emojis: string[] };
+  type Card = { id: number; emoji: string };
+  const THEMES: Theme[] = [
     { id: 'animals', icon: '🐾', emojis: ['🐶','🐱','🐰','🐸','🐻','🦊','🐨','🐼'] },
     { id: 'food', icon: '🍎', emojis: ['🍎','🍌','🍕','🍦','🧁','🥕','🍓','🥑'] },
     { id: 'transport', icon: '🚗', emojis: ['🚗','🚌','✈️','🚂','🚲','🛴','🚀','⛵'] },
     { id: 'nature', icon: '🌳', emojis: ['🌻','🌈','⭐','🌙','❄️','🔥','💧','🍄'] },
   ];
 
-  let theme = $state(null);
+  let theme = $state<Theme | null>(null);
   let pairs = $state(4); // 4, 6, or 8
-  let cards = $state([]);
-  let flipped = $state([]);
+  let cards = $state<Card[]>([]);
+  let flipped = $state<number[]>([]);
   let matched = $state(new Set());
   let moves = $state(0);
   let gameWon = $state(false);
   let lockBoard = $state(false);
   let showStar = $state(false);
 
-  function startGame(thm) {
-    theme = t;
+  function startGame(thm: Theme) {
+    theme = thm;
     const selected = thm.emojis.slice(0, pairs);
     const deck = [...selected, ...selected].map((emoji, i) => ({ id: i, emoji }));
     // Fisher-Yates shuffle
@@ -40,7 +42,7 @@
     gameWon = false;
   }
 
-  function flipCard(idx) {
+  function flipCard(idx: number) {
     if (lockBoard || flipped.includes(idx) || matched.has(cards[idx].emoji)) return;
     flipped = [...flipped, idx];
     speak(cards[idx].emoji);
@@ -107,7 +109,7 @@
         <span class="big">🎉</span>
         <h2>{$t('memoryGame.youWon')}</h2>
         <p>{moves} {$t('memoryGame.moves')}</p>
-        <button class="action-btn" onclick={() => startGame(theme)}>🔄 {$t('memoryGame.playAgain')}</button>
+        <button class="action-btn" onclick={() => { if (theme) startGame(theme); }}>🔄 {$t('memoryGame.playAgain')}</button>
         <button class="action-btn" onclick={() => theme = null}>📋 {$t('memoryGame.newTheme')}</button>
       </div>
     {:else}
@@ -136,7 +138,6 @@
 <style>
   .app { min-height:100dvh; display:flex; flex-direction:column; background:var(--bg); color:var(--text); }
   h1 { font-size:1.4rem; margin:0; flex:1; }
-  .moves { font-size:.9rem; font-weight:600; background:#fff3e0; color:#e65100; padding:.25rem .75rem; border-radius:20px; }
   .cnt { flex:1; padding:1rem; max-width:600px; margin:0 auto; width:100%; }
   h2 { text-align:center; margin-bottom:1rem; }
   .size-picker { display:flex; justify-content:center; gap:.5rem; margin-bottom:1.5rem; }

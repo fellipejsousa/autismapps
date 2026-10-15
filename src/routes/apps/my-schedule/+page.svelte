@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -9,9 +9,10 @@
   import { fade } from 'svelte/transition';
   import { get } from 'svelte/store';
 
+  type ScheduleItem = { icon: string; text: string; done: boolean; id: number };
   const ICONS = ['📚','🎨','🎮','⚽','🎵','🧩','🍽️','🛁','🚶','🧹','📺','🍳','✏️','🧘','🛏️','🏊','🚴','🎭','🧸','📖'];
 
-  let items = $state([]);
+  let items = $state<ScheduleItem[]>([]);
   let adding = $state(false);
   let newIcon = $state('📚');
   let newText = $state('');
@@ -20,7 +21,7 @@
     const pid = get(activeProfileId);
     if (pid) {
       getAppProgress(pid, 'my-schedule').then(data => {
-        if (data?.items) items = data.items;
+        if (Array.isArray(data?.items)) items = data.items as ScheduleItem[];
       });
     }
   });
@@ -38,14 +39,14 @@
     save();
   }
 
-  function toggle(id) {
+  function toggle(id: number) {
     items = items.map(i => i.id === id ? { ...i, done: !i.done } : i);
     const item = items.find(i => i.id === id);
     if (item?.done) speak(`${item.text} ✅`);
     save();
   }
 
-  function remove(id) {
+  function remove(id: number) {
     items = items.filter(i => i.id !== id);
     save();
   }

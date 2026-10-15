@@ -288,7 +288,6 @@
 
 <style>
   .focus-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
   .pomo-badge { font-weight: 700; font-size: 1em; }
 
   .tab-bar { display: flex; border-bottom: 1px solid var(--border); }

@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,9 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const PHRASES = [
+  type Phrase = { icon: string; key: string };
+  type PhraseCategory = { cat: string; icon: string; phrases: Phrase[] };
+  const PHRASES: PhraseCategory[] = [
     { cat: 'greetings', icon: '👋', phrases: [
       { icon: '👋', key: 'conversationAid.hi' },
       { icon: '😊', key: 'conversationAid.howAreYou' },
@@ -38,9 +40,9 @@
     ]},
   ];
 
-  let selectedCat = $state(null);
+  let selectedCat = $state<PhraseCategory | null>(null);
 
-  function sayPhrase(p) {
+  function sayPhrase(p: Phrase) {
     speak($t(p.key));
   }
 </script>
@@ -66,7 +68,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if selectedCat}
       <h2>{selectedCat.icon} {$t(`conversationAid.cat.${selectedCat.cat}`)}</h2>
       <div class="phrases">
         {#each selectedCat.phrases as p}

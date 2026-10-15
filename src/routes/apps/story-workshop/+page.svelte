@@ -164,7 +164,7 @@
         {#each STORIES as story}
           <button class="story-card" onclick={() => selectStory(story)}>
             <span class="story-icon">{story.icon}</span>
-            <span class="story-title">{story.title}</span>
+            <span class="story-title">{$t(story.titleKey)}</span>
             <span class="story-scenes">{story.scenes.length} {$t('storyWorkshop.scene')}</span>
           </button>
         {/each}
@@ -187,7 +187,7 @@
         <div class="scene-view">
           <div class="scene-card">
             <span class="scene-icon">{selectedStory.scenes[currentSceneIdx].icon}</span>
-            <p class="scene-text">{selectedStory.scenes[currentSceneIdx].text}</p>
+            <p class="scene-text">{$t(selectedStory.scenes[currentSceneIdx].textKey)}</p>
             <span class="scene-num">{$t('storyWorkshop.scene')} {currentSceneIdx + 1}/{selectedStory.scenes.length}</span>
           </div>
 
@@ -210,10 +210,10 @@
           <h2 class="your-turn">{$t('storyWorkshop.yourTurn')}</h2>
           <div class="picture-strip">
             {#each selectedStory.scenes as scene, i}
-              <div class="picture-frame" class:current={i === currentSceneIdx} onclick={() => currentSceneIdx = i}>
+              <button type="button" class="picture-frame" class:current={i === currentSceneIdx} onclick={() => currentSceneIdx = i} aria-label={$t(scene.textKey)}>
                 <span class="pf-icon">{scene.icon}</span>
                 <span class="pf-num">{i + 1}</span>
-              </div>
+              </button>
             {/each}
           </div>
 
@@ -238,7 +238,7 @@
             <div class="timeline-item">
               <div class="timeline-num">{i + 1}</div>
               <span class="timeline-icon">{scene.icon}</span>
-              <p class="timeline-text">{scene.text}</p>
+              <p class="timeline-text">{$t(scene.textKey)}</p>
               <button class="timeline-play" onclick={() => playScene(scene)} disabled={isPlaying}>🔊</button>
             </div>
           {/each}
@@ -281,7 +281,7 @@
 
   .your-turn{text-align:center;font-size:1.5rem;color:#E91E63}
   .picture-strip{display:flex;gap:.5rem;overflow-x:auto;width:100%;padding:.5rem}
-  .picture-frame{width:60px;height:60px;border-radius:14px;border:2px solid var(--border);background:var(--bg-card);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+  .picture-frame{width:60px;height:60px;border-radius:14px;border:2px solid var(--border);background:var(--bg-card);color:inherit;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
   .picture-frame.current{border-color:#E91E63;border-width:3px}
   .pf-icon{font-size:1.5rem} .pf-num{font-size:.7rem;color:var(--text-secondary)}
   .current-picture{padding:2rem;background:var(--bg-card);border-radius:24px;border:2px solid var(--border);width:100%;text-align:center}

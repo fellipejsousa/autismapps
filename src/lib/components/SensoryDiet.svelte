@@ -52,20 +52,21 @@
   }
 
   // Touch support for mobile drag
-  let touchActivity: any = null;
+  let touchActivity = $state<(typeof ACTIVITIES)[number] | null>(null);
 
-  function handleTouchStart(e: TouchEvent, activity: any) {
+  function handleTouchStart(activity: (typeof ACTIVITIES)[number]) {
     touchActivity = activity;
   }
 
   function handleSlotTap(slotId: string) {
-    if (!touchActivity) return;
+    const activityToAdd = touchActivity;
+    if (!activityToAdd) return;
     const current = diet[slotId] || [];
-    if (current.some((a: any) => a.id === touchActivity.id)) {
+    if (current.some((a: any) => a.id === activityToAdd.id)) {
       touchActivity = null;
       return;
     }
-    const newDiet = { ...diet, [slotId]: [...current, touchActivity] };
+    const newDiet = { ...diet, [slotId]: [...current, activityToAdd] };
     ondietchange(newDiet);
     touchActivity = null;
   }
@@ -98,7 +99,19 @@
       </div>
       <div class="activity-grid">
         {#each displayActivities() as activity (activity.id)}
-          <div ontouchstart={(e) => handleTouchStart(e, activity)}>
+          <div
+            class="activity-choice"
+            role="button"
+            tabindex="0"
+            aria-pressed={touchActivity?.id === activity.id}
+            onclick={() => handleTouchStart(activity)}
+            onkeydown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                handleTouchStart(activity);
+              }
+            }}
+          >
             <ActivityCard {activity} draggable={true} />
           </div>
         {/each}
@@ -115,13 +128,20 @@
           ondragover={(e) => handleDragOver(e, slot.id)}
           ondragleave={handleDragLeave}
           ondrop={(e) => handleDrop(e, slot.id)}
-          onclick={() => handleSlotTap(slot.id)}
           role="region"
           aria-label={$t(slot.label)}
         >
           <div class="slot-header">
             <span class="slot-emoji">{slot.emoji}</span>
-            <span class="slot-label">{$t(slot.label)}</span>
+            <button
+              type="button"
+              class="slot-label"
+              onclick={() => handleSlotTap(slot.id)}
+              disabled={!touchActivity}
+              aria-label={$t('sensory.diet.addActivityToSlot', { slot: $t(slot.label) })}
+            >
+              {$t(slot.label)} {#if touchActivity}<span aria-hidden="true">＋</span>{/if}
+            </button>
           </div>
           <div class="slot-activities">
             {#if diet[slot.id]?.length > 0}
@@ -177,6 +197,17 @@
     flex: 1;
     min-width: 250px;
   }
+
+  .activity-choice {
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 12px;
+  }
+
+  .activity-choice:focus-visible { outline: 3px solid #3498DB; outline-offset: 2px; }
 
   .palette-header h4 {
     margin: 0 0 8px;
@@ -255,10 +286,17 @@
   }
 
   .slot-label {
+    border: 0;
+    padding: 4px 0;
+    background: transparent;
     font-weight: 600;
     font-size: 0.9rem;
     color: var(--slot-color);
+    cursor: pointer;
+    text-align: left;
   }
+
+  .slot-label:disabled { cursor: default; }
 
   .slot-activities {
     display: flex;

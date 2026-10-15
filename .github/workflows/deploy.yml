@@ -24,7 +24,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build && cp build/index.html build/404.html
+      - run: npm run build && cp build/fallback.html build/404.html
         env:
           NODE_OPTIONS: '--unhandled-rejections=warn'
       - uses: actions/upload-pages-artifact@v3

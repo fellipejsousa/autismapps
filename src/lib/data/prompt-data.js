@@ -87,6 +87,25 @@ export const DIRECTION_ANGLES = {
 };
 
 /**
+ * @typedef {Object} PromptSound
+ * @property {string} sound
+ * @property {string} ipa
+ * @property {SoundCategory} category
+ * @property {string} touchZone
+ * @property {string} [touchZoneSecondary]
+ * @property {Direction} direction
+ * @property {Pressure} pressure
+ * @property {Duration} duration
+ * @property {string} description_sv
+ * @property {string} description_en
+ * @property {string[]} steps_sv
+ * @property {string[]} steps_en
+ * @property {string} exampleWord
+ * @property {number} arasaacId
+ * @property {boolean} [videoPlaceholder]
+ */
+
+/**
  * Get ARASAAC pictogram URL
  * @param {number} id
  * @returns {string}

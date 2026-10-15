@@ -36,7 +36,7 @@
 
   const dataPoints = $derived(() => {
     return senseIds.map((id, i) => {
-      const rating = ratings[id] || 'neutral';
+      const rating = (ratings[id] || 'neutral') as keyof typeof RATING_VALUES;
       const value = RATING_VALUES[rating] ?? 1;
       return getPoint(i, value, senseIds.length);
     });

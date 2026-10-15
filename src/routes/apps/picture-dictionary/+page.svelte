@@ -365,9 +365,6 @@
 
 <style>
   .dict-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
-  .stats-bar { display: flex; gap: 10px; }
-  .stat { font-weight: 600; font-size: 0.9em; color: var(--text-muted); }
 
   .instruction { text-align: center; padding: 16px; font-weight: 600; color: var(--text-muted); }
   .feedback { text-align: center; font-size: 1.1em; font-weight: 700; color: #27AE60; padding: 8px; }

@@ -21,7 +21,7 @@
 
   const DURATION_ACTIVITIES: DurationActivity[] = [
     { key: 'brush_teeth', labelEn: 'Brush teeth', labelSv: 'Borsta tänderna', minutes: 2, pictoId: 2326 },
-    { key: 'wash_hands', labelEn: 'Wash hands', labelSv: 'Tvätta händerna', minutes: 1, pictoId: 9006 },
+    { key: 'wash_hands', labelEn: 'Wash hands', labelSv: 'Tvätta händerna', minutes: 1, pictoId: 34846 },
     { key: 'eat_breakfast', labelEn: 'Eat breakfast', labelSv: 'Äta frukost', minutes: 15, pictoId: 4626 },
     { key: 'eat_lunch', labelEn: 'Eat lunch', labelSv: 'Äta lunch', minutes: 30, pictoId: 4611 },
     { key: 'shower', labelEn: 'Take a shower', labelSv: 'Duscha', minutes: 10, pictoId: 26803 },
@@ -256,10 +256,10 @@
   }
 
   const VOCAB_CARDS: VocabCard[] = [
-    { wordEn: 'Soon', wordSv: 'Snart', descEn: 'Something will happen in a little while', descSv: 'Något händer om en liten stund', pictoId: 33044 },
+    { wordEn: 'Soon', wordSv: 'Snart', descEn: 'Something will happen in a little while', descSv: 'Något händer om en liten stund', pictoId: 22633 },
     { wordEn: 'Later', wordSv: 'Sedan', descEn: 'Something will happen after this', descSv: 'Något händer efter det här', pictoId: 32749 },
-    { wordEn: 'In a moment', wordSv: 'Strax', descEn: 'Very soon, almost now', descSv: 'Mycket snart, nästan nu', pictoId: 33044 },
-    { wordEn: 'In a while', wordSv: 'Om en stund', descEn: 'After some time has passed', descSv: 'Efter att en tid har gått', pictoId: 39109 },
+    { wordEn: 'In a moment', wordSv: 'Strax', descEn: 'Very soon, almost now', descSv: 'Mycket snart, nästan nu', pictoId: 22633 },
+    { wordEn: 'In a while', wordSv: 'Om en stund', descEn: 'After some time has passed', descSv: 'Efter att en tid har gått', pictoId: 39843 },
     { wordEn: 'Yesterday', wordSv: 'Igår', descEn: 'The day before today', descSv: 'Dagen före idag', pictoId: 38279 },
     { wordEn: 'Tomorrow', wordSv: 'Imorgon', descEn: 'The day after today', descSv: 'Dagen efter idag', pictoId: 38278 },
     { wordEn: 'Before', wordSv: 'Före', descEn: 'Something that happened first', descSv: 'Något som hände först', pictoId: 32745 },
@@ -309,7 +309,7 @@
       b: { labelEn: 'Eat dinner', labelSv: 'Äta middag', minutes: 30, pictoId: 4611 },
     },
     {
-      a: { labelEn: 'Wash hands', labelSv: 'Tvätta händerna', minutes: 1, pictoId: 9006 },
+      a: { labelEn: 'Wash hands', labelSv: 'Tvätta händerna', minutes: 1, pictoId: 34846 },
       b: { labelEn: 'Take a shower', labelSv: 'Duscha', minutes: 10, pictoId: 26803 },
     },
     {
@@ -455,7 +455,7 @@
   </header>
 
   <!-- Tabs -->
-  <nav class="tabs" role="tablist">
+  <div class="tabs" role="tablist">
     {#each TABS as tab}
       <button
         class="tab-btn"
@@ -468,7 +468,7 @@
         <span class="tab-label">{$t(tab.key)}</span>
       </button>
     {/each}
-  </nav>
+  </div>
 
   <main class="tp-body">
     <!-- ══════ Tab 1: How Long Is...? ══════ -->

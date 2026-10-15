@@ -1,7 +1,17 @@
-<script>
+<script lang="ts">
   import { speak } from '$lib/tts';
 
-  let { i18n = {}, onback } = $props();
+  type TranslationData = Record<string, any>;
+  type SafetyScenario = {
+    id: string;
+    nameKey: string;
+    isSafe: boolean;
+    descriptionKey: string;
+    explanationKey: string;
+    image: string;
+    background: string;
+  };
+  let { i18n = {}, onback = () => {} } = $props<{ i18n?: TranslationData; onback?: () => void }>();
 
   let currentMode = $state('overview'); // 'overview', 'game'
   let score = $state(0);
@@ -9,83 +19,95 @@
   let currentScenario = $state(0);
   let gameFinished = $state(false);
 
-  const scenarios = [
+  const scenarios: SafetyScenario[] = [
     {
       id: 'sidewalk',
-      name: 'Trottoar',
-      description: 'En trottoar vid sidan av vägen',
+      nameKey: 'sidewalk',
       isSafe: true,
-      explanation: 'Trottoaren är säker för fotgängare. Den är skild från vägen och bilar kör inte här.',
-      image: '🏘️',
+      descriptionKey: 'sidewalk-desc',
+      explanationKey: 'sidewalk-explanation',
+      image: '🚶‍➡️',
       background: '#E8F5E8'
     },
     {
       id: 'road',
-      name: 'Väg',
-      description: 'Mitt på en bilväg',
+      nameKey: 'road',
       isSafe: false,
-      explanation: 'Vägen är farlig för fotgängare. Bilar kör här och du kan bli påkörd.',
-      image: '🛣️',
+      descriptionKey: 'road-desc',
+      explanationKey: 'road-explanation',
+      image: '🚗',
       background: '#FFEBEE'
     },
     {
       id: 'parking',
-      name: 'Parkeringsplats',
-      description: 'En parkeringsplats med bilar',
+      nameKey: 'parking',
       isSafe: false,
-      explanation: 'Parkeringsplatser är farliga. Bilar rör sig och förare ser inte alltid fotgängare.',
+      descriptionKey: 'parking-desc',
+      explanationKey: 'parking-explanation',
       image: '🅿️',
       background: '#FFEBEE'
     },
     {
       id: 'playground',
-      name: 'Lekplats',
-      description: 'En inhägnad lekplats i parken',
+      nameKey: 'playground',
       isSafe: true,
-      explanation: 'Lekplatsen är säker. Den är inhägnad och bilar får inte köra här.',
-      image: '🎪',
+      descriptionKey: 'playground-desc',
+      explanationKey: 'playground-explanation',
+      image: '🛝',
       background: '#E8F5E8'
     },
     {
       id: 'crosswalk',
-      name: 'Övergångsställe',
-      description: 'Ett övergångsställe med trafikljus',
+      nameKey: 'crosswalk',
       isSafe: true,
-      explanation: 'Övergångsstället är säkert när ljuset är grönt och du tittar åt båda hållen.',
-      image: '🚦',
+      descriptionKey: 'crosswalk-desc',
+      explanationKey: 'crosswalk-explanation',
+      image: '🚸',
       background: '#E8F5E8'
     },
     {
       id: 'highway',
-      name: 'Motorväg',
-      description: 'En motorväg med snabb trafik',
+      nameKey: 'highway',
       isSafe: false,
-      explanation: 'Motorvägen är mycket farlig. Bilar kör mycket fort och fotgängare får inte vistas här.',
-      image: '🛻',
+      descriptionKey: 'highway-desc',
+      explanationKey: 'highway-explanation',
+      image: '🚘',
       background: '#FFEBEE'
     },
     {
       id: 'school-zone',
-      name: 'Skolområde',
-      description: 'Utanför en skola med övergångsställe',
+      nameKey: 'school-zone',
       isSafe: true,
-      explanation: 'Skolområden är säkra. Bilar måste köra långsamt här och det finns övergångsställen.',
+      descriptionKey: 'school-zone-desc',
+      explanationKey: 'school-zone-explanation',
       image: '🏫',
       background: '#E8F5E8'
     },
     {
       id: 'construction',
-      name: 'Byggarbetsplats',
-      description: 'En byggarbetsplats med maskiner',
+      nameKey: 'construction',
       isSafe: false,
-      explanation: 'Byggarbetsplatser är farliga. Stora maskiner och lastbilar arbetar här.',
+      descriptionKey: 'construction-desc',
+      explanationKey: 'construction-explanation',
       image: '🚧',
       background: '#FFEBEE'
     }
   ];
 
-  function getI18nValue(key) {
-    return key.split('.').reduce((obj, k) => obj?.[k], i18n) || key;
+  function getI18nValue(key: string): string {
+    const value = key.split('.').reduce<any>((obj, segment) => obj?.[segment], i18n);
+    return typeof value === 'string' ? value : key;
+  }
+
+  function formatMessage(key: string, values: Record<string, string | number>): string {
+    return Object.entries(values).reduce(
+      (message, [name, value]) => message.replaceAll(`{${name}}`, String(value)),
+      getI18nValue(key)
+    );
+  }
+
+  function scenarioText(scenario: SafetyScenario, key: 'nameKey' | 'descriptionKey' | 'explanationKey') {
+    return getI18nValue(`safe-places.${scenario[key]}`);
   }
 
   function startGame() {
@@ -98,28 +120,28 @@
     // Shuffle scenarios for variety
     scenarios.sort(() => Math.random() - 0.5);
     
-    speak('Titta på bilden och bestäm om det är en säker plats eller en farlig plats.');
+    speak(getI18nValue('safe-places.prompt-speech'));
   }
 
-  function handleAnswer(userSaidSafe) {
+  function handleAnswer(userSaidSafe: boolean) {
     const scenario = scenarios[currentScenario];
     const isCorrect = userSaidSafe === scenario.isSafe;
     
     if (isCorrect) {
       score++;
-      speak(`${getI18nValue('common.excellent')} ${scenario.explanation}`);
+      speak(`${getI18nValue('common.excellent')} ${scenarioText(scenario, 'explanationKey')}`);
     } else {
       lives--;
-      speak(`${getI18nValue('traffic-lights.try-again')} ${scenario.explanation}`);
+      speak(`${getI18nValue('traffic-lights.try-again')} ${scenarioText(scenario, 'explanationKey')}`);
     }
     
     setTimeout(() => {
       if (lives <= 0) {
         gameFinished = true;
-        speak(`Spelet är över. Du fick ${score} poäng av ${currentScenario + 1} möjliga.`);
+        speak(formatMessage('safe-places.game-over-speech', { score, total: currentScenario + 1 }));
       } else if (currentScenario >= scenarios.length - 1) {
         gameFinished = true;
-        speak(`Grattis! Du klarade spelet med ${score} poäng av ${scenarios.length} möjliga!`);
+        speak(formatMessage('safe-places.win-speech', { score, total: scenarios.length }));
       } else {
         currentScenario++;
       }
@@ -134,7 +156,7 @@
     gameFinished = false;
   }
 
-  function getStars(score, total) {
+  function getStars(score: number, total: number) {
     const percentage = (score / total) * 100;
     if (percentage >= 90) return '⭐⭐⭐';
     if (percentage >= 70) return '⭐⭐';
@@ -156,40 +178,28 @@
       <!-- Overview and instructions -->
       <div class="overview-section">
         <div class="instructions">
-          <h2>Lär dig identifiera säkra och farliga platser</h2>
+      <h2>{getI18nValue('safe-places.intro-title')}</h2>
           <p>
-            I det här spelet kommer du att se olika platser. Din uppgift är att bestämma 
-            om platsen är <span class="safe-text">SÄKER</span> eller <span class="dangerous-text">FARLIG</span> 
-            för barn att leka eller gå på.
+            {getI18nValue('safe-places.intro-copy')}
           </p>
           
           <div class="examples">
             <div class="example-card safe">
-              <div class="example-icon">🏘️</div>
-              <h3>SÄKRA platser</h3>
-              <ul>
-                <li>Trottoarer</li>
-                <li>Lekplatser</li>
-                <li>Skolområden</li>
-                <li>Parker</li>
-              </ul>
+              <div class="example-icon" aria-hidden="true">✓</div>
+              <h3>{getI18nValue('safe-places.safe')}</h3>
+              <ul>{#each ['sidewalk', 'playground', 'school-zone', 'park'] as item}<li>{getI18nValue(`safe-places.${item}`)}</li>{/each}</ul>
             </div>
             
             <div class="example-card dangerous">
-              <div class="example-icon">🛣️</div>
-              <h3>FARLIGA platser</h3>
-              <ul>
-                <li>Vägar</li>
-                <li>Parkeringsplatser</li>
-                <li>Motorvägar</li>
-                <li>Byggarbetsplatser</li>
-              </ul>
+              <div class="example-icon" aria-hidden="true">!</div>
+              <h3>{getI18nValue('safe-places.dangerous')}</h3>
+              <ul>{#each ['road', 'parking', 'highway', 'construction'] as item}<li>{getI18nValue(`safe-places.${item}`)}</li>{/each}</ul>
             </div>
           </div>
         </div>
         
         <button class="start-game-button" onclick={startGame}>
-          Starta spelet
+          {getI18nValue('safe-places.start')}
         </button>
       </div>
     {/if}
@@ -199,11 +209,11 @@
       <div class="game-section">
         <div class="game-header">
           <div class="score-display">
-            <span class="score">Poäng: {score}/{currentScenario}</span>
-            <span class="lives">Liv: {'❤️'.repeat(lives)}</span>
+            <span class="score">{getI18nValue('safe-places.score-label')}: {score}/{currentScenario + 1}</span>
+            <span class="lives">{getI18nValue('safe-places.lives-label')}: {'❤️'.repeat(lives)}</span>
           </div>
           <div class="progress">
-            Fråga {currentScenario + 1} av {scenarios.length}
+            {formatMessage('safe-places.question-label', { current: currentScenario + 1, total: scenarios.length })}
           </div>
         </div>
         
@@ -213,13 +223,13 @@
           </div>
           
           <div class="scenario-info">
-            <h2>{scenarios[currentScenario].name}</h2>
-            <p>{scenarios[currentScenario].description}</p>
+            <h2>{scenarioText(scenarios[currentScenario], 'nameKey')}</h2>
+            <p>{getI18nValue(`safe-places.${scenarios[currentScenario].descriptionKey}`)}</p>
           </div>
         </div>
         
         <div class="question">
-          <h3>Är denna plats säker för barn?</h3>
+          <h3>{getI18nValue('safe-places.question')}</h3>
         </div>
         
         <div class="answer-buttons">
@@ -227,14 +237,14 @@
             class="answer-button safe"
             onclick={() => handleAnswer(true)}
           >
-            ✅ SÄKER
+            ✅ {getI18nValue('safe-places.safe')}
           </button>
           
           <button 
             class="answer-button dangerous"
             onclick={() => handleAnswer(false)}
           >
-            ❌ FARLIG
+            ❌ {getI18nValue('safe-places.dangerous')}
           </button>
         </div>
       </div>
@@ -245,7 +255,7 @@
       <div class="results-section">
         <div class="results-card">
           <div class="results-header">
-            <h2>{lives > 0 ? 'Grattis!' : 'Spelet är över'}</h2>
+            <h2>{getI18nValue(lives > 0 ? 'safe-places.results-success' : 'safe-places.results-over')}</h2>
             <div class="stars">{getStars(score, currentScenario + 1)}</div>
           </div>
           
@@ -254,27 +264,27 @@
               <span class="score-number">{score}</span>
               <span class="score-total">/{currentScenario + 1}</span>
             </div>
-            <p>Du identifierade {score} av {currentScenario + 1} platser korrekt!</p>
+            <p>{formatMessage('safe-places.results-score', { score, total: currentScenario + 1 })}</p>
           </div>
           
           <div class="results-message">
             {#if score === currentScenario + 1}
-              <p class="perfect">Perfekt! Du vet verkligen vilka platser som är säkra! 🎉</p>
+              <p class="perfect">{getI18nValue('safe-places.results-perfect')} 🎉</p>
             {:else if (score / (currentScenario + 1)) >= 0.8}
-              <p class="excellent">Mycket bra! Du förstår trafiksäkerhet väl! 👏</p>
+              <p class="excellent">{getI18nValue('safe-places.results-excellent')} 👏</p>
             {:else if (score / (currentScenario + 1)) >= 0.6}
-              <p class="good">Bra jobbat! Öva lite mer så blir du ännu bättre! 👍</p>
+              <p class="good">{getI18nValue('safe-places.results-good')} 👍</p>
             {:else}
-              <p class="needs-practice">Fortsätt öva! Kom ihåg att trottoarer och lekplatser är säkra. 💪</p>
+              <p class="needs-practice">{getI18nValue('safe-places.results-practice')} 💪</p>
             {/if}
           </div>
           
           <div class="action-buttons">
             <button class="play-again-button" onclick={startGame}>
-              Spela igen
+              {getI18nValue('safe-places.play-again')}
             </button>
             <button class="back-button-results" onclick={resetGame}>
-              Tillbaka till start
+              {getI18nValue('safe-places.back-to-start')}
             </button>
           </div>
         </div>
@@ -348,16 +358,6 @@
     color: #666;
     line-height: 1.6;
     margin: 0 0 2rem 0;
-  }
-
-  .safe-text {
-    color: #4CAF50;
-    font-weight: bold;
-  }
-
-  .dangerous-text {
-    color: #F44336;
-    font-weight: bold;
   }
 
   .examples {

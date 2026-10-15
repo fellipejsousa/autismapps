@@ -75,24 +75,27 @@
   .welcome-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(28, 47, 37, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10000;
+    z-index: 90;
     padding: 1rem;
+    backdrop-filter: blur(5px);
   }
 
   .welcome-dialog {
-    background: white;
-    border-radius: 1.5rem;
-    padding: 2rem;
+    background: var(--bg-card, #fff);
+    color: var(--text, #26392f);
+    border: 1px solid var(--border, #e1e7e1);
+    border-radius: 1.25rem;
+    padding: 1.75rem;
     max-width: 440px;
     width: 100%;
-    max-height: 85vh;
+    max-height: min(82dvh, 680px);
     overflow-y: auto;
     text-align: center;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(16, 36, 25, 0.25);
   }
 
   .welcome-icon {
@@ -103,14 +106,14 @@
   h2 {
     margin: 0 0 1.2rem;
     font-size: 1.5rem;
-    color: #2c3e50;
+    color: var(--text, #26392f);
   }
 
   .welcome-section {
     text-align: left;
     margin-bottom: 1rem;
     padding: 0.8rem;
-    background: #f8f9fa;
+    background: var(--bg-hover, #edf1ed);
     border-radius: 0.75rem;
   }
 
@@ -118,14 +121,14 @@
     font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 0.3rem;
-    color: #555;
+    color: var(--text-secondary, #637168);
   }
 
   .welcome-section p {
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.5;
-    color: #333;
+    color: var(--text, #26392f);
   }
 
   .dont-show {
@@ -135,7 +138,7 @@
     gap: 0.5rem;
     margin: 1rem 0;
     font-size: 0.85rem;
-    color: #777;
+    color: var(--text-muted, #748178);
     cursor: pointer;
   }
 
@@ -144,38 +147,32 @@
   }
 
   .welcome-start {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--accent, #315a49);
     color: white;
     border: none;
     padding: 0.9rem 2rem;
-    border-radius: 2rem;
+    border-radius: 999px;
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     width: 100%;
-    transition: transform 0.15s, box-shadow 0.15s;
+    transition: transform 0.15s, background 0.15s;
   }
 
   .welcome-start:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    background: var(--accent-hover, #254737);
+    transform: translateY(-1px);
   }
 
   .welcome-start:active {
     transform: translateY(0);
   }
 
-  @media (prefers-color-scheme: dark) {
-    .welcome-dialog {
-      background: #1e1e2e;
-      color: #cdd6f4;
-    }
-    h2 { color: #cdd6f4; }
-    .welcome-section {
-      background: #313244;
-    }
-    .section-label { color: #a6adc8; }
-    .welcome-section p { color: #bac2de; }
-    .dont-show { color: #a6adc8; }
+  @media (max-width: 560px) {
+    .welcome-dialog { padding: 1.25rem; }
+    .welcome-icon { font-size: 2.5rem; }
+    h2 { margin-bottom: .9rem; font-size: 1.3rem; }
+    .welcome-section { margin-bottom: .7rem; padding: .7rem; }
+    .welcome-section p { font-size: .87rem; }
   }
 </style>

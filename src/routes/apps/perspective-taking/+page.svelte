@@ -19,6 +19,7 @@
   let showStar = $state(false);
   let showConfetti = $state(false);
   let levelComplete = $state(false);
+  const previewEmotions: ('happy' | 'sad' | 'angry' | 'scared' | 'surprised' | 'confused')[] = ['happy', 'sad', 'angry', 'scared', 'surprised', 'confused'];
 
   let currentScenario = $derived(activeLevel ? activeLevel.scenarios[currentScenarioIndex] : null);
   let isLastScenario = $derived(activeLevel ? currentScenarioIndex >= activeLevel.scenarios.length - 1 : false);
@@ -76,7 +77,7 @@
 />
 
 {#if showStar}
-  <GoldStarBurst />
+  <GoldStarBurst show={showStar} />
 {/if}
 
 <div class="pt-page">
@@ -110,7 +111,7 @@
     <div class="emotion-preview">
       <h2>{$t('pt.emotions_title')}</h2>
       <div class="emotion-faces-row">
-        {#each ['happy', 'sad', 'angry', 'scared', 'surprised', 'confused'] as emotion}
+        {#each previewEmotions as emotion}
           <button class="emotion-preview-btn" onclick={() => speak($t(`pt.emotion.${emotion}`))}>
             <EmotionFaces {emotion} size={50} />
             <span>{$t(`pt.emotion.${emotion}`)}</span>

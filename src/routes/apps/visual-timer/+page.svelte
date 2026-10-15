@@ -252,9 +252,6 @@
 <style>
   .timer-page { display: flex; flex-direction: column; min-height: 100dvh; }
   .timer-page.fullscreen { background: var(--bg); }
-  .back-btn:hover { background: var(--bg-hover); }
-  .header-actions { display: flex; align-items: center; gap: 8px; }
-  .star-count { font-size: 1em; font-weight: 600; }
   .icon-btn { width: 40px; height: 40px; font-size: 1.2em; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; }
 
   .timer-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 20px; }

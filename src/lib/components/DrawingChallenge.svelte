@@ -1,12 +1,19 @@
-<script>
+<script lang="ts">
   import { t } from '$lib/i18n';
   import { fade } from 'svelte/transition';
-  import { createEventDispatcher, onMount } from 'svelte';
   import CelebrationOverlay from './CelebrationOverlay.svelte';
 
-  let { playSound, oncomplete } = $props();
+  type Challenge = { id: string; key: string; hint: string };
+  type GameState = 'idle' | 'drawing' | 'done';
+  type Completion = { detail: { exerciseId: string; stars: number; score: number } };
+  interface Props {
+    playSound: (sound: 'success') => void;
+    oncomplete?: (completion: Completion) => void;
+  }
 
-  const CHALLENGES = [
+  let { playSound, oncomplete }: Props = $props();
+
+  const CHALLENGES: Challenge[] = [
     { id: 'circle', key: 'fineMotor.drawing.circle', hint: '⭕' },
     { id: 'triangle', key: 'fineMotor.drawing.triangle', hint: '🔺' },
     { id: 'square', key: 'fineMotor.drawing.square', hint: '🟦' },
@@ -20,14 +27,14 @@
   const BRUSH_COLORS = ['#333', '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#e91e63'];
   const BRUSH_SIZES = [3, 6, 10, 16];
 
-  let gameState = $state('idle');
+  let gameState = $state<GameState>('idle');
   let currentChallengeIdx = $state(0);
   let brushColor = $state('#333');
   let brushSize = $state(6);
   let isDrawing = $state(false);
   let hasDrawn = $state(false);
-  let canvasEl;
-  let ctx;
+  let canvasEl = $state<HTMLCanvasElement | undefined>(undefined);
+  let ctx = $state<CanvasRenderingContext2D | null>(null);
 
   let currentChallenge = $derived(CHALLENGES[currentChallengeIdx]);
 
@@ -43,21 +50,25 @@
     canvasEl.width = rect.width * window.devicePixelRatio;
     canvasEl.height = rect.height * window.devicePixelRatio;
     ctx = canvasEl.getContext('2d');
+    if (!ctx) return;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
   }
 
-  function getPos(e) {
+  function getPos(e: TouchEvent | MouseEvent) {
+    if (!canvasEl) return { x: 0, y: 0 };
     const rect = canvasEl.getBoundingClientRect();
-    const touch = e.touches?.[0] || e;
+    const point = 'touches' in e ? e.touches[0] : e;
+    if (!point) return { x: 0, y: 0 };
     return {
-      x: touch.clientX - rect.left,
-      y: touch.clientY - rect.top,
+      x: point.clientX - rect.left,
+      y: point.clientY - rect.top,
     };
   }
 
-  function handleStart(e) {
+  function handleStart(e: TouchEvent | MouseEvent) {
+    if (!ctx) return;
     e.preventDefault();
     isDrawing = true;
     hasDrawn = true;
@@ -68,8 +79,8 @@
     ctx.lineWidth = brushSize;
   }
 
-  function handleMove(e) {
-    if (!isDrawing) return;
+  function handleMove(e: TouchEvent | MouseEvent) {
+    if (!isDrawing || !ctx) return;
     e.preventDefault();
     const pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
@@ -78,13 +89,13 @@
     ctx.moveTo(pos.x, pos.y);
   }
 
-  function handleEnd(e) {
+  function handleEnd(e: TouchEvent | MouseEvent) {
     e.preventDefault();
     isDrawing = false;
   }
 
   function clearCanvas() {
-    if (ctx) {
+    if (ctx && canvasEl) {
       ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
     }
     hasDrawn = false;
@@ -148,6 +159,7 @@
             class="size-btn"
             class:selected={brushSize === size}
             onclick={() => brushSize = size}
+            aria-label={$t('fineMotor.drawing.brushSize', { size: String(size) })}
           >
             <span class="size-dot" style="width:{size}px;height:{size}px;background:{brushColor}"></span>
           </button>

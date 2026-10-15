@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -6,7 +6,9 @@
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
 
-  const BOARDS = [
+  type PecsCard = { icon: string; key: string };
+  type Board = { id: string; icon: string; cards: PecsCard[] };
+  const BOARDS: Board[] = [
     { id: 'needs', icon: '🙋', cards: [
       { icon: '🍽️', key: 'pecsBoard.eat' }, { icon: '💧', key: 'pecsBoard.drink' },
       { icon: '🚽', key: 'pecsBoard.toilet' }, { icon: '😴', key: 'pecsBoard.sleep' },
@@ -24,10 +26,10 @@
     ]},
   ];
 
-  let board = $state(null);
-  let strip = $state([]);
+  let board = $state<Board | null>(null);
+  let strip = $state<PecsCard[]>([]);
 
-  function addToStrip(card) {
+  function addToStrip(card: PecsCard) {
     strip = [...strip, card];
     speak($t(card.key));
   }
@@ -68,7 +70,7 @@
           </button>
         {/each}
       </div>
-    {:else}
+    {:else if board}
       <h2>{board.icon} {$t(`pecsBoard.board.${board.id}`)}</h2>
       <div class="cards">
         {#each board.cards as card}

@@ -69,7 +69,7 @@ export const sequences = [
     level: 2,
     title: { en: 'Morning routine', sv: 'Morgonrutin' },
     steps: [
-      { description: { en: 'Wake up', sv: 'Vakna' }, arasaacId: 31874, order: 1 },
+      { description: { en: 'Wake up', sv: 'Vakna' }, arasaacId: 8989, order: 1 },
       { description: { en: 'Get dressed', sv: 'Klä på dig' }, arasaacId: 6627, order: 2 },
       { description: { en: 'Eat breakfast', sv: 'Ät frukost' }, arasaacId: 4626, order: 3 },
       { description: { en: 'Go to school', sv: 'Gå till skolan' }, arasaacId: 32446, order: 4 },
@@ -100,7 +100,7 @@ export const sequences = [
       { description: { en: 'Put on shirt', sv: 'Ta på tröja' }, arasaacId: 13640, order: 2 },
       { description: { en: 'Put on pants', sv: 'Ta på byxor' }, arasaacId: 2565, order: 3 },
       { description: { en: 'Put on socks', sv: 'Ta på strumpor' }, arasaacId: 2298, order: 4 },
-      { description: { en: 'Put on shoes', sv: 'Ta på skor' }, arasaacId: 2775, order: 5 },
+      { description: { en: 'Put on shoes', sv: 'Ta på skor' }, arasaacId: 2622, order: 5 },
     ],
   },
 
@@ -145,7 +145,7 @@ export const sequences = [
     steps: [
       { description: { en: 'Get flour', sv: 'Ta mjöl' }, arasaacId: 8600, order: 1 },
       { description: { en: 'Add eggs', sv: 'Lägg i ägg' }, arasaacId: 2427, order: 2 },
-      { description: { en: 'Mix together', sv: 'Blanda ihop' }, arasaacId: 5515, order: 3 },
+      { description: { en: 'Mix together', sv: 'Blanda ihop' }, arasaacId: 25738, order: 3 },
       { description: { en: 'Put in oven', sv: 'Sätt i ugnen' }, arasaacId: 2426, order: 4 },
       { description: { en: 'The cake is done!', sv: 'Kakan är klar!' }, arasaacId: 2502, order: 5 },
     ],
@@ -190,7 +190,7 @@ export const sequences = [
     title: { en: 'Go shopping', sv: 'Handla' },
     steps: [
       { description: { en: 'Go to the store', sv: 'Gå till affären' }, arasaacId: 35695, order: 1 },
-      { description: { en: 'Get a cart', sv: 'Ta en kundvagn' }, arasaacId: 21506, order: 2 },
+      { description: { en: 'Get a cart', sv: 'Ta en kundvagn' }, arasaacId: 30618, order: 2 },
       { description: { en: 'Pay with money', sv: 'Betala med pengar' }, arasaacId: 6457, order: 3 },
       { description: { en: 'Carry the bag', sv: 'Bär kassen' }, arasaacId: 23849, order: 4 },
     ],
@@ -306,6 +306,7 @@ export const sequences = [
 /**
  * Get ARASAAC pictogram URL for a given ID
  */
+/** @param {number} id */
 export function getArasaacUrl(id) {
   return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 }
@@ -313,6 +314,7 @@ export function getArasaacUrl(id) {
 /**
  * Get sequences filtered by category and/or level
  */
+/** @param {{ category?: string, level?: number }} options */
 export function getSequences({ category, level } = {}) {
   let filtered = sequences;
   if (category) filtered = filtered.filter(s => s.category === category);
@@ -323,6 +325,7 @@ export function getSequences({ category, level } = {}) {
 /**
  * Shuffle an array (Fisher-Yates)
  */
+/** @template T @param {T[]} arr @returns {T[]} */
 export function shuffleArray(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {

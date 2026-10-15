@@ -197,7 +197,6 @@
 
 <style>
   .phrase-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .sentence-preview {
     display: flex; align-items: center; gap: 12px; padding: 14px 16px;

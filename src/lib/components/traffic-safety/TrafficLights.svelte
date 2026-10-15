@@ -1,47 +1,51 @@
-<script>
+<script lang="ts">
   import { speak } from '$lib/tts';
   import { playSuccessSound, playErrorSound } from '$lib/audio.js';
   import { getPictogram } from '$lib/data/arasaac-data.js';
 
-  let { i18n = {}, onback = () => {} } = $props();
-  
-  
-  let currentLight = $state('red'); // 'red', 'yellow', 'green'
+  type TranslationData = Record<string, any>;
+  type Light = 'red' | 'yellow' | 'green';
+  type Action = 'stop' | 'wait' | 'go';
+  let { i18n = {}, onback = () => {} } = $props<{ i18n?: TranslationData; onback?: () => void }>();
+
+
+  let currentLight = $state<Light>('red');
   let quizMode = $state(false);
   let showFeedback = $state(false);
   let feedbackMessage = $state('');
-  
-  const lights = ['red', 'yellow', 'green'];
-  const lightActions = {
+
+  const lights: Light[] = ['red', 'yellow', 'green'];
+  const actions: Action[] = ['stop', 'wait', 'go'];
+  const lightActions: Record<Light, Action> = {
     red: 'stop',
-    yellow: 'wait', 
+    yellow: 'wait',
     green: 'go'
   };
-  
+
   let pedestrianVisible = $derived(currentLight === 'green');
-  
+
   function cycleLight() {
     const currentIndex = lights.indexOf(currentLight);
     const nextIndex = (currentIndex + 1) % lights.length;
     currentLight = lights[nextIndex];
-    
+
     // Speak the current light meaning
     const meaning = getNestedValue(i18n, `traffic-lights.${currentLight}`) || currentLight;
     speak(meaning);
   }
-  
+
   function startQuiz() {
     quizMode = true;
     const question = getNestedValue(i18n, 'traffic-lights.what-do-you-do') || 'What do you do now?';
     speak(question);
   }
-  
-  function handleAnswerClick(action) {
+
+  function handleAnswerClick(action: Action) {
     const correctAction = lightActions[currentLight];
     const isCorrect = action === correctAction;
-    
+
     showFeedback = true;
-    
+
     if (isCorrect) {
       feedbackMessage = getNestedValue(i18n, 'traffic-lights.correct') || 'Correct!';
       playSuccessSound();
@@ -51,7 +55,7 @@
       playErrorSound();
       speak(feedbackMessage);
     }
-    
+
     // Hide feedback after 2 seconds
     setTimeout(() => {
       showFeedback = false;
@@ -61,14 +65,15 @@
       }
     }, 2000);
   }
-  
+
   function exitQuiz() {
     quizMode = false;
     showFeedback = false;
   }
-  
-  function getNestedValue(obj, path) {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+
+  function getNestedValue(obj: TranslationData, path: string): string | undefined {
+    const value = path.split('.').reduce<any>((current, key) => current?.[key], obj);
+    return typeof value === 'string' ? value : undefined;
   }
 </script>
 
@@ -79,26 +84,31 @@
       ← {getNestedValue(i18n, 'common.back') || 'Back'}
     </button>
   </div>
-  
+
   <div class="content">
     <div class="traffic-light-section">
       <!-- Traffic Light -->
-      <div class="traffic-light" onclick={cycleLight}>
+      <button
+        type="button"
+        class="traffic-light"
+        aria-label={getNestedValue(i18n, 'traffic-lights.tap-light') || 'Change traffic light'}
+        onclick={cycleLight}
+      >
         <div class="light-housing">
           <div class="light red {currentLight === 'red' ? 'active' : ''}"></div>
           <div class="light yellow {currentLight === 'yellow' ? 'active' : ''}"></div>
           <div class="light green {currentLight === 'green' ? 'active' : ''}"></div>
         </div>
         <div class="light-pole"></div>
-      </div>
-      
+      </button>
+
       <!-- Instructions -->
       <div class="instructions">
         {#if !quizMode}
           <p class="tap-instruction">
             {getNestedValue(i18n, 'traffic-lights.tap-light') || 'Tap the light to change it'}
           </p>
-          
+
           <div class="light-meanings">
             <div class="meaning red-meaning">
               <div class="color-circle red"></div>
@@ -113,7 +123,7 @@
               <span>{getNestedValue(i18n, 'traffic-lights.green') || 'Green means GO'}</span>
             </div>
           </div>
-          
+
           <button class="quiz-button" onclick={startQuiz}>
             {getNestedValue(i18n, 'traffic-lights.what-do-you-do') || 'What do you do now?'}
           </button>
@@ -125,16 +135,17 @@
             <p class="quiz-context">
               {getNestedValue(i18n, `traffic-lights.quiz-${currentLight}`) || `The light is ${currentLight}`}
             </p>
-            
+
             <div class="answer-buttons">
-              {#each ['stop', 'wait', 'go'] as action}
-                <button 
+              {#each actions as action}
+                {@const pictogram = getPictogram(action)}
+                <button
                   class="answer-button"
                   onclick={() => handleAnswerClick(action)}
                 >
-                  {#if getPictogram(action)}
-                    <img 
-                      src={getPictogram(action).url} 
+                  {#if action !== 'go' && action !== 'wait' && pictogram}
+                    <img
+                      src={pictogram.url}
                       alt={getNestedValue(i18n, `actions.${action}`) || action}
                     />
                   {/if}
@@ -142,7 +153,7 @@
                 </button>
               {/each}
             </div>
-            
+
             <button class="exit-quiz-button" onclick={exitQuiz}>
               {getNestedValue(i18n, 'common.back') || 'Back'}
             </button>
@@ -150,7 +161,7 @@
         {/if}
       </div>
     </div>
-    
+
     <!-- Pedestrian Animation -->
     <div class="pedestrian-section">
       <div class="pedestrian {pedestrianVisible ? 'walking' : 'stopped'}">
@@ -158,7 +169,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- Feedback Modal -->
   {#if showFeedback}
     <div class="feedback-modal">
@@ -220,6 +231,11 @@
   }
 
   .traffic-light {
+    display: block;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    font: inherit;
     cursor: pointer;
     user-select: none;
   }
@@ -419,7 +435,7 @@
     .traffic-lights-container {
       background: white;
     }
-    
+
     .meaning, .quiz-context, .answer-button {
       border: 2px solid #000;
     }
@@ -430,11 +446,11 @@
     .light, .answer-button, .pedestrian {
       transition: none;
     }
-    
+
     .pedestrian.walking {
       animation: none;
     }
-    
+
     .answer-button:hover {
       transform: none;
     }

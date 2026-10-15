@@ -1,31 +1,32 @@
-<script>
+<script lang="ts">
+  import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
-  import { t } from '$lib/i18n';
+  import { t, locale } from '$lib/i18n';
   import { speak } from '$lib/tts';
   import { fade } from 'svelte/transition';
-  import { ALL_WORDS, WORD_CATEGORIES, pictogramUrl } from '$lib/sagostunden/words';
-  import { TEMPLATES, fillTemplate } from '$lib/sagostunden/templates';
-  import { generateStory } from '$lib/sagostunden/engine';
-  import { saveStory, getAllStories, deleteStory, toggleFavorite } from '$lib/sagostunden/storage';
+  import { ALL_WORDS, WORD_CATEGORIES, pictogramUrl, type Word, type WordCategory } from '$lib/sagostunden/words';
+  import { TEMPLATES, type StoryTemplate } from '$lib/sagostunden/templates';
+  import { generateStory, type GeneratedStory } from '$lib/sagostunden/engine';
+  import { saveStory, getAllStories, deleteStory, toggleFavorite, type SavedStory } from '$lib/sagostunden/storage';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
   import { awardStar, GoldStarBurst } from '$lib/rewards';
 
   // View state
-  let view = $state('select'); // 'select' | 'story' | 'saved'
+  let view = $state<'select' | 'story' | 'saved'>('select');
 
   // Word selection
-  let selectedCategory = $state('djur');
-  let selectedWords = $state({});  // slot → word
+  let selectedCategory = $state<WordCategory>('djur');
+  let selectedWords = $state<Record<string, Word>>({});
 
   // Template
-  let selectedTemplate = $state(null);
+  let selectedTemplate = $state<StoryTemplate | null>(null);
 
   // Generated story
-  let currentStory = $state(null);
+  let currentStory = $state<GeneratedStory | null>(null);
 
   // Saved stories
-  let savedStories = $state([]);
+  let savedStories = $state<SavedStory[]>([]);
 
   // Settings
   let fontSize = $state(24);
@@ -33,9 +34,9 @@
   let showStar = $state(false);
 
   // Slots needed by current template
-  let neededSlots = $derived(selectedTemplate ? selectedTemplate.slots : []);
+  let neededSlots = $derived(selectedTemplate?.slots ?? []);
 
-  const SLOT_LABELS = {
+  const SLOT_LABELS: Record<string, { emoji: string; label: string }> = {
     DJUR: { emoji: '🐾', label: 'Djur' },
     PLATS: { emoji: '🏠', label: 'Plats' },
     SAK: { emoji: '🎁', label: 'Sak' },
@@ -44,7 +45,7 @@
     VERB: { emoji: '⚡', label: 'Handling' },
   };
 
-  const SLOT_TO_CAT = {
+  const SLOT_TO_CAT: Record<string, WordCategory> = {
     DJUR: 'djur',
     PLATS: 'platser',
     SAK: 'saker',
@@ -53,7 +54,16 @@
     VERB: 'verb',
   };
 
-  function selectWord(slot, word) {
+  function templateTitle(template: StoryTemplate): string {
+    return $locale === 'sv' ? template.title : template.titleEn;
+  }
+
+  function savedStoryTitle(story: SavedStory): string {
+    const template = TEMPLATES.find((item) => item.id === story.templateId);
+    return template ? templateTitle(template) : story.title;
+  }
+
+  function selectWord(slot: string, word: Word) {
     selectedWords = { ...selectedWords, [slot]: word };
     speak(word.sv);
     // Auto-advance: scroll to next empty slot
@@ -70,7 +80,7 @@
     }, 200);
   }
 
-  function removeWord(slot) {
+  function removeWord(slot: string) {
     const copy = { ...selectedWords };
     delete copy[slot];
     selectedWords = copy;
@@ -97,7 +107,7 @@
     if (!currentStory) return;
     await saveStory({
       storyId: currentStory.id,
-      title: currentStory.template.title,
+      title: templateTitle(currentStory.template),
       paragraphs: currentStory.paragraphs,
       wordIds: Object.fromEntries(
         Object.entries(currentStory.words).map(([k, w]) => [k, w.id])
@@ -113,12 +123,14 @@
     savedStories = await getAllStories();
   }
 
-  async function removeSaved(id) {
+  async function removeSaved(id: number | undefined) {
+    if (id === undefined) return;
     await deleteStory(id);
     await loadSaved();
   }
 
-  async function toggleFav(id) {
+  async function toggleFav(id: number | undefined) {
+    if (id === undefined) return;
     await toggleFavorite(id);
     await loadSaved();
   }
@@ -129,13 +141,42 @@
     speak(text);
   }
 
-  function wordsForSlot(slot) {
+  function wordsForSlot(slot: string): Word[] {
     const cat = SLOT_TO_CAT[slot];
     return cat ? ALL_WORDS.filter(w => w.category === cat) : [];
   }
 
-  // Init
-  loadSaved();
+  function openSavedStory(story: SavedStory) {
+    const storedTemplate = TEMPLATES.find(template => template.id === story.templateId);
+    const template: StoryTemplate = storedTemplate ?? {
+      id: story.templateId,
+      title: story.title,
+      titleEn: story.title,
+      titleKey: '',
+      slots: Object.keys(story.wordIds),
+      paragraphs: { sv: story.paragraphs, en: story.paragraphs },
+    };
+    const words = Object.fromEntries(
+      Object.entries(story.wordIds)
+        .map(([slot, wordId]) => [slot, ALL_WORDS.find(word => word.id === wordId)])
+        .filter((entry): entry is [string, Word] => entry[1] !== undefined)
+    );
+
+    currentStory = {
+      id: story.storyId,
+      template,
+      words,
+      paragraphs: story.paragraphs,
+      locale: 'sv',
+      createdAt: story.createdAt,
+    };
+    view = 'story';
+  }
+
+  // IndexedDB is available only in the browser, never during SSR/prerendering.
+  onMount(() => {
+    void loadSaved();
+  });
 </script>
 
 <WelcomeDialog
@@ -176,7 +217,7 @@
               onclick={() => { 
                 selectedTemplate = tmpl; 
                 selectedWords = {}; 
-                speak(tmpl.title);
+                speak(templateTitle(tmpl));
                 // Scroll to first slot after template selection
                 setTimeout(() => {
                   const firstSlot = tmpl.slots[0];
@@ -185,7 +226,7 @@
                 }, 200);
               }}
             >
-              <span class="template-title">{tmpl.title}</span>
+              <span class="template-title">{templateTitle(tmpl)}</span>
               <span class="template-slots">
                 {tmpl.slots.map(s => SLOT_LABELS[s]?.emoji || '').join(' ')}
               </span>
@@ -272,7 +313,7 @@
   {:else if view === 'story'}
     <section class="story-view" transition:fade={{ duration: 200 }}>
       {#if currentStory}
-        <h2 class="story-title">{currentStory.template.title}</h2>
+        <h2 class="story-title">{templateTitle(currentStory.template)}</h2>
 
         <!-- Word pictograms row -->
         {#if showPictograms}
@@ -323,14 +364,14 @@
           {#each savedStories as story}
             <div class="saved-card" class:favorite={story.favorite}>
               <div class="saved-header">
-                <h3>{story.title}</h3>
+                <h3>{savedStoryTitle(story)}</h3>
                 <span class="saved-date">
                   {new Date(story.createdAt).toLocaleDateString('sv-SE')}
                 </span>
               </div>
               <p class="saved-preview">{story.paragraphs[0]}</p>
               <div class="saved-actions">
-                <button onclick={() => { currentStory = { paragraphs: story.paragraphs, template: { title: story.title }, words: {} }; view = 'story'; }}>
+                <button onclick={() => openSavedStory(story)}>
                   📖 {$t('sagostunden.read')}
                 </button>
                 <button onclick={() => toggleFav(story.id)}>
@@ -707,6 +748,5 @@
     .word-grid {
       grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
     }
-    .top-bar h1 { font-size: 22px; }
   }
 </style>

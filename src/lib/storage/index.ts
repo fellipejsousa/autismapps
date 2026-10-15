@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
+import { browser } from '$app/environment';
 
 export interface Board {
   id?: number;
@@ -65,7 +66,7 @@ export interface AppProgress {
   updatedAt: Date;
 }
 
-const db = new Dexie('AutismApps') as Dexie & {
+type AutismAppsDatabase = Dexie & {
   boards: EntityTable<Board, 'id'>;
   schedules: EntityTable<Schedule, 'id'>;
   settings: EntityTable<UserSettings, 'id'>;
@@ -77,13 +78,17 @@ const db = new Dexie('AutismApps') as Dexie & {
   diplomas: EntityTable<{ id?: number; profileId: number; childName: string; achievementKey: string; appId?: string; earnedAt: Date }, 'id'>;
 };
 
-db.version(1).stores({
+// IndexedDB exists only in the browser. Avoid constructing Dexie's database
+// during SSR/prerendering, where its automatic open attempt rejects.
+const db = (browser ? new Dexie('AutismApps') : null) as AutismAppsDatabase;
+
+if (browser) db.version(1).stores({
   boards: '++id, name, category, createdAt',
   schedules: '++id, name, date, createdAt',
   settings: '++id, &key'
 });
 
-db.version(2).stores({
+if (browser) db.version(2).stores({
   boards: '++id, name, category, createdAt',
   schedules: '++id, name, date, createdAt',
   settings: '++id, &key',
@@ -91,7 +96,7 @@ db.version(2).stores({
   appProgress: '++id, profileId, appId, [profileId+appId]'
 });
 
-db.version(3).stores({
+if (browser) db.version(3).stores({
   boards: "++id, name, category, createdAt",
   schedules: "++id, name, date, createdAt",
   settings: "++id, &key",

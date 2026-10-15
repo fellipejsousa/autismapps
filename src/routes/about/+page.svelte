@@ -4,6 +4,9 @@
   import { t } from '$lib/i18n';
   import { flagSvg } from '$lib/flags';
   import { fade } from 'svelte/transition';
+  import { ALL_APPS } from '$lib/apps';
+
+  const readyAppCount = ALL_APPS.filter((app) => app.ready).length;
 </script>
 
 <div class="about" in:fade>
@@ -21,7 +24,7 @@
     </section>
 
     <section class="stats">
-      <div class="stat"><span class="stat-num">42</span><span class="stat-label">{$t('about.apps')}</span></div>
+      <div class="stat"><span class="stat-num">{readyAppCount}</span><span class="stat-label">{$t('about.apps')}</span></div>
       <div class="stat"><span class="stat-num">2</span><span class="stat-label">{$t('about.languages')}</span></div>
       <div class="stat"><span class="stat-num">100%</span><span class="stat-label">{$t('about.free')}</span></div>
     </section>

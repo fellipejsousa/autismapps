@@ -1,11 +1,23 @@
-<script>
+<script lang="ts">
   import { getPictogram } from '$lib/data/arasaac-data.js';
   import { speak } from '$lib/tts';
 
-  let { i18n = {}, onactivitySelected = () => {} } = $props();
+  type Activity = {
+    id: string;
+    icon: string;
+    titleKey: string;
+    descKey: string;
+  };
+
+  type TranslationData = Record<string, any>;
+
+  let {
+    i18n = {},
+    onactivitySelected = () => {}
+  } = $props<{ i18n?: TranslationData; onactivitySelected?: (event: CustomEvent<{ activity: string }>) => void }>();
   
   
-  const activities = [
+  const activities: Activity[] = [
     {
       id: 'traffic-lights',
       icon: 'trafficLight',
@@ -43,35 +55,45 @@
       descKey: 'activities.vehicles-desc'
     }
   ];
+
+  // Activity cards use ARASAAC pictograms where the motif is clear. For
+  // "safe places" and "reflectors", the available catalog IDs are ambiguous;
+  // use only a clear catalog match. The vest is a general visibility cue,
+  // not a promise that every vest is reflective.
+  function pictogramFor(activity: Activity) {
+    if (activity.id === 'safe-places') return getPictogram('safe');
+    if (activity.id === 'reflectors') return getPictogram('reflector');
+    return getPictogram(activity.icon);
+  }
   
-  function handleActivityClick(activity) {
+  function handleActivityClick(activity: Activity) {
     const title = getNestedValue(i18n, activity.titleKey) || activity.id;
     speak(title);
     onactivitySelected({ detail: { activity: activity.id } });
   }
   
-  function getNestedValue(obj, path) {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
+  function getNestedValue(obj: TranslationData, path: string): string | undefined {
+    const value = path.split('.').reduce<any>((current, key) => current?.[key], obj);
+    return typeof value === 'string' ? value : undefined;
   }
 </script>
 
 <div class="activity-grid">
   {#each activities as activity}
+    {@const pictogram = pictogramFor(activity)}
     <button 
       class="activity-card"
       onclick={() => handleActivityClick(activity)}
     >
       <div class="activity-icon">
-        {#if getPictogram(activity.icon)}
+        {#if pictogram}
           <img 
-            src={getPictogram(activity.icon).url} 
+            src={pictogram.url}
             alt={getNestedValue(i18n, activity.titleKey) || activity.id}
             loading="lazy"
           />
         {:else}
-          <div class="placeholder-icon">
-            {activity.icon.slice(0, 2).toUpperCase()}
-          </div>
+          <div class="placeholder-icon" aria-hidden="true">{activity.id === 'safe-places' ? '✓' : activity.id === 'reflectors' ? '◉' : activity.icon.slice(0, 2).toUpperCase()}</div>
         {/if}
       </div>
       

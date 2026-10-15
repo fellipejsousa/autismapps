@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -20,7 +20,7 @@
     { id: 'home', icon: '🏠', time: '15:00' },
   ];
 
-  let completed = $state({});
+  let completed = $state<Record<string, boolean>>({});
   let now = $state('');
 
   function updateNow() {
@@ -29,7 +29,7 @@
   }
   updateNow();
 
-  function toggle(id) {
+  function toggle(id: string) {
     completed = { ...completed, [id]: !completed[id] };
     if (completed[id]) speak(`${$t(`schoolDay.period.${id}`)} ✅`);
   }
@@ -73,7 +73,6 @@
 <style>
   .app { min-height:100dvh; display:flex; flex-direction:column; background:var(--bg); color:var(--text); }
   h1 { font-size:1.4rem; margin:0; flex:1; }
-  .clock { font-weight:700; font-variant-numeric:tabular-nums; }
   .cnt { flex:1; padding:1rem; max-width:600px; margin:0 auto; width:100%; }
   .timeline { display:flex; flex-direction:column; gap:.5rem; }
   .period { display:flex; align-items:center; gap:.75rem; padding:.75rem 1rem; border:2px solid var(--border); border-radius:12px; background:var(--bg-card); cursor:pointer; min-height:48px; text-align:left; position:relative; }

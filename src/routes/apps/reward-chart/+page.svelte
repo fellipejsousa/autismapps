@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -9,8 +9,9 @@
   import { fade } from 'svelte/transition';
   import { get } from 'svelte/store';
 
-  const REWARD_ICONS = ['⭐','🌟','💎','🏆','🎯','🎖️','👑','🦄'];
-  const GOAL_PRESETS = [
+  type GoalPreset = { icon: string; key: string };
+  type RewardHistory = { reason: string; time: string; icon: string };
+  const GOAL_PRESETS: GoalPreset[] = [
     { icon: '🧹', key: 'rewardChart.goal.tidy' },
     { icon: '🪥', key: 'rewardChart.goal.brush' },
     { icon: '📚', key: 'rewardChart.goal.homework' },
@@ -21,7 +22,7 @@
 
   let stars = $state(0);
   let goal = $state(10);
-  let history = $state([]);
+  let history = $state<RewardHistory[]>([]);
   let showCelebration = $state(false);
 
   $effect(() => {
@@ -29,9 +30,9 @@
     if (pid) {
       getAppProgress(pid, 'reward-chart').then(data => {
         if (data) {
-          stars = data.stars || 0;
-          goal = data.goal || 10;
-          history = data.history || [];
+          stars = typeof data.stars === 'number' ? data.stars : 0;
+          goal = typeof data.goal === 'number' && data.goal > 0 ? data.goal : 10;
+          history = Array.isArray(data.history) ? data.history as RewardHistory[] : [];
         }
       });
     }
@@ -42,7 +43,7 @@
     if (pid) saveAppProgress(pid, 'reward-chart', { stars, goal, history });
   }
 
-  function addStar(reason) {
+  function addStar(reason: GoalPreset) {
     stars++;
     history = [...history, { reason: $t(reason.key), time: new Date().toLocaleString(), icon: reason.icon }];
     speak(`${reason.icon} ${$t(reason.key)}! ⭐`);
@@ -115,7 +116,6 @@
   .app { min-height:100dvh; display:flex; flex-direction:column; background:var(--bg); color:var(--text); }
   h1 { font-size:1.4rem; margin:0; flex:1; }
   h2 { text-align:center; margin:1.5rem 0 1rem; }
-  .star-count { font-weight:700; font-size:1.1rem; background:#fff8e1; color:#f57f17; padding:.25rem .75rem; border-radius:20px; }
   .cnt { flex:1; padding:1rem; max-width:600px; margin:0 auto; width:100%; }
   .progress-bar { height:24px; background:var(--border); border-radius:12px; position:relative; overflow:hidden; margin-bottom:1rem; }
   .fill { height:100%; background:linear-gradient(90deg,#ffd54f,#ffb300); border-radius:12px; transition:width .5s; }

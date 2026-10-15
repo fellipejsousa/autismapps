@@ -1,13 +1,25 @@
-<script>
-  let { i18n = {}, visible = true, onstart = () => {} } = $props();
+<script lang="ts">
+  type TrafficSafetyCopy = {
+    title?: string;
+    welcome?: { purpose?: string; how?: string; goal?: string };
+    common?: { start?: string };
+  };
+
+  let { i18n = {}, visible = true, onstart = () => {} } = $props<{
+    i18n?: TrafficSafetyCopy;
+    visible?: boolean;
+    onstart?: () => void;
+  }>();
 </script>
 
 {#if visible}
 <div class="overlay">
   <div class="dialog">
-    <h2>🚦 Trafiksäkerhet</h2>
-    <p>Lär dig om trafiksäkerhet med interaktiva övningar.</p>
-    <button onclick={onstart}>Börja!</button>
+    <h2>🚦 {i18n.title || 'Traffic Safety'}</h2>
+    <p>{i18n.welcome?.purpose || ''}</p>
+    <p>{i18n.welcome?.how || ''}</p>
+    <p>{i18n.welcome?.goal || ''}</p>
+    <button onclick={onstart}>{i18n.common?.start || 'Start'}</button>
   </div>
 </div>
 {/if}

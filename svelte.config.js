@@ -8,10 +8,11 @@ const config = {
 		adapter: adapter({
 			pages: 'build',
 			assets: 'build',
-			fallback: 'index.html'
+			fallback: 'fallback.html'
 		}),
 		paths: {
-			base: dev || process.env.TAURI_ENV_PLATFORM ? '' : ('BASE_PATH' in process.env ? process.env.BASE_PATH : '/autismapps')
+			base: dev || process.env.TAURI_ENV_PLATFORM ? '' : ('BASE_PATH' in process.env ? process.env.BASE_PATH : '/autismapps'),
+			relative: false
 		},
 		prerender: {
 			handleHttpError: ({ path, referrer, message }) => {

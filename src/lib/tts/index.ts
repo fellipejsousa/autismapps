@@ -13,6 +13,16 @@ import { preprocessText } from './pronunciation-map';
 import { isTauri, getLocalVoiceUrl, BUNDLED_VOICES } from './tauri-voices';
 
 const DEFAULT_RATE = 0.25;
+type TTSStatus = {
+	engine: 'piper' | 'webspeech' | 'none';
+	piperReady: boolean;
+	piperFailed: boolean;
+	voiceCached: boolean;
+	downloading: boolean;
+	downloadProgress: number;
+	lastSpoke: string;
+	lastError: string;
+};
 
 // Selected voice IDs per language — persisted in localStorage
 // Default Swedish voice is Alma (custom-trained for these apps)
@@ -44,16 +54,7 @@ let piperReady = false;
 let piperFailed = false;
 
 // Diagnostic store for settings debug panel
-export const ttsStatus = writable<{
-	engine: 'piper' | 'webspeech' | 'none';
-	piperReady: boolean;
-	piperFailed: boolean;
-	voiceCached: boolean;
-	downloading: boolean;
-	downloadProgress: number;
-	lastSpoke: string;
-	lastError: string;
-}>({
+export const ttsStatus = writable<TTSStatus>({
 	engine: 'none',
 	piperReady: false,
 	piperFailed: false,
@@ -64,7 +65,7 @@ export const ttsStatus = writable<{
 	lastError: '',
 });
 
-function updateStatus(patch: Partial<ReturnType<typeof get<typeof ttsStatus>>>) {
+function updateStatus(patch: Partial<TTSStatus>) {
 	ttsStatus.update(s => ({ ...s, ...patch }));
 }
 let piperModule: typeof import('@mintplex-labs/piper-tts-web') | null = null;
@@ -225,7 +226,9 @@ async function downloadCustomVoice(
 			}
 		}
 
-		const blob = new Blob(chunks, { type: res.headers.get('Content-Type') ?? undefined });
+		const blob = new Blob(chunks.map((chunk) => chunk.slice().buffer as ArrayBuffer), {
+			type: res.headers.get('Content-Type') ?? undefined
+		});
 
 		// Write to OPFS with the filename the piper library expects
 		const root = await navigator.storage.getDirectory();

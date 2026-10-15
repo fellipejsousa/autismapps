@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -7,7 +7,9 @@
   import { fade } from 'svelte/transition';
   import { awardStar, GoldStarBurst } from '$lib/rewards';
 
-  const WORDS = [
+  type Word = { word: string; hint: string };
+  type Letter = { ch: string; id: number; used: boolean };
+  const WORDS: Word[] = [
     { word: 'SOL', hint: '☀️' },
     { word: 'BIL', hint: '🚗' },
     { word: 'HUS', hint: '🏠' },
@@ -23,13 +25,13 @@
   ];
 
   let wordIdx = $state(0);
-  let letters = $state([]);
-  let placed = $state([]);
+  let letters = $state<Letter[]>([]);
+  let placed = $state<(Letter | null)[]>([]);
   let correct = $state(false);
   let score = $state(0);
   let showStar = $state(false);
 
-  function shuffle(arr) {
+  function shuffle<T>(arr: T[]): T[] {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -47,7 +49,7 @@
 
   loadWord();
 
-  function placeLetter(letter) {
+  function placeLetter(letter: Letter) {
     if (letter.used) return;
     const idx = placed.findIndex(p => p === null);
     if (idx === -1) return;
@@ -73,7 +75,7 @@
     }
   }
 
-  function removeLetter(idx) {
+  function removeLetter(idx: number) {
     if (!placed[idx]) return;
     const letter = placed[idx];
     placed = placed.map((p, i) => i === idx ? null : p);

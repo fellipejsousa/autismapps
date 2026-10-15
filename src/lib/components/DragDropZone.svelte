@@ -90,7 +90,7 @@
   </div>
 </div>
 
-<script context="module" lang="ts">
+<script module lang="ts">
   import { locale } from '$lib/i18n';
 </script>
 

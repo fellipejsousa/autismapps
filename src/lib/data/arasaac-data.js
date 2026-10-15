@@ -1,70 +1,71 @@
-// Validated ARASAAC pictogram IDs for traffic safety app
-// All IDs validated via https://api.arasaac.org/v1/pictograms/en/search/{word}
+// ARASAAC pictograms used in the traffic safety app. These IDs were checked
+// against the catalog keyword metadata; null means there is no safe match.
+import { base } from '$app/paths';
 
+/** @type {Record<string, number | null>} */
 export const ARASAAC_IDS = {
   // Basic actions (validated)
   stop: 7196,
   go: 8142,
   look: 6564,
   wait: 36914,
-  walk: 2523,  // Will need to validate
+  walk: 29951,
   
   // Vehicles (validated)
   car: 2339,
   bus: 2262,
   truck: 3232,  // Dump truck - validated
   bicycle: 6935,  // Validated - schematic version
-  ambulance: 3447, // Will need to validate
+  ambulance: 6899,
   police: 6983, // Police car from search results
   firetruck: 6982, // Fire truck - validated (schematic)
   
   // Places and safety
-  sidewalk: 4782, // Will need to validate
-  road: 3986, // Will need to validate
-  parking: 6283, // Car park from search results
-  safe: 6068, // Safe (strongbox) - may need different word
+  sidewalk: 2247,
+  road: 2302,
+  parking: 24755,
+  safe: 6964, // House as a familiar safe-place cue
   dangerous: 25315, // Danger warning sign (validated)
   
   // Traffic elements
-  trafficLight: 2637, // Will need to validate
-  crosswalk: 36845, // From bus search - wait at crosswalk
+  trafficLight: 2567, // Full traffic light with red, yellow, and green lamps
+  crosswalk: 3430,
   warning: 25315, // Same as danger
   
   // Time/visibility
-  day: 8523, // Will need to validate
-  night: 8524, // Will need to validate
-  reflector: 39540, // Will need to validate
+  day: 26799,
+  night: 26997,
+  reflector: 39534, // Vest (used as the high-visibility clothing cue)
   
   // Emotions/feedback
-  good: 2830, // Will need to validate
-  excellent: 2831, // Will need to validate
+  good: null,
+  excellent: null,
 };
 
 /**
- * Get ARASAAC pictogram URL for given ID
+ * Get the locally bundled, visually verified ARASAAC pictogram for an ID.
  * @param {number} id - ARASAAC pictogram ID
- * @param {number} size - Size (default 500)
  * @returns {string} URL to pictogram
  */
-export function getArasaacUrl(id, size = 500) {
-  return `https://static.arasaac.org/pictograms/${id}/${id}_${size}.png`;
+export function getArasaacUrl(id) {
+  return `${base}/pictograms/traffic-safety/${id}.png`;
 }
 
 /**
  * Get pictogram data for a key
  * @param {string} key - Key from ARASAAC_IDS
- * @returns {object} Pictogram data with id and url
+ * @returns {{ id: number, url: string, key: string } | null} Pictogram data, or null if no icon exists
  */
-export function getPictogram(key, size = 500) {
+export function getPictogram(key) {
   const id = ARASAAC_IDS[key];
-  if (!id) {
+  if (id == null) {
     console.warn(`No ARASAAC ID found for key: ${key}`);
     return null;
   }
   
   return {
     id,
-    url: getArasaacUrl(id, size),
+    url: getArasaacUrl(id),
     key
   };
 }

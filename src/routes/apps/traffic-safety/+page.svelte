@@ -1,31 +1,17 @@
-<script>
-  import { onMount } from 'svelte';
+<script lang="ts">
   import TrafficSafetyApp from '$lib/components/traffic-safety/TrafficSafetyApp.svelte';
-  import { browser } from '$app/environment';
+  import { locale, t } from '$lib/i18n';
   
-  let preferredLanguage = $state('sv');
-  
-  onMount(() => {
-    if (browser) {
-      const browserLang = navigator.language.slice(0, 2);
-      preferredLanguage = browserLang === 'sv' ? 'sv' : 'en';
-      const savedLang = localStorage.getItem('traffic-safety-language');
-      if (savedLang && ['sv', 'en'].includes(savedLang)) {
-        preferredLanguage = savedLang;
-      }
-    }
-  });
+  let preferredLanguage = $state<'sv' | 'en'>('en');
   
   $effect(() => {
-    if (browser && preferredLanguage) {
-      localStorage.setItem('traffic-safety-language', preferredLanguage);
-    }
+    preferredLanguage = $locale === 'sv' ? 'sv' : 'en';
   });
 </script>
 
 <svelte:head>
-  <title>Trafiksäkerhet</title>
-  <meta name="description" content="Lär dig trafiksäkerhet för barn med autism." />
+  <title>{$t('app.traffic_safety')} — {$t('app.title.brand')}</title>
+  <meta name="description" content={$t('app.traffic_safety.desc')} />
 </svelte:head>
 
 <TrafficSafetyApp bind:lang={preferredLanguage} />

@@ -228,8 +228,6 @@
   h2 { font-size: 1em; margin: 0 0 8px; font-weight: 600; }
   .cnt { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto; width: 100%; }
   .cr { text-align: center; padding: 12px; font-size: .75em; opacity: .5; }
-  .phase-select { display: flex; align-items: center; gap: 6px; font-size: .85em; }
-  .phase-select select { padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border, #ccc); }
   .strip-area { background: var(--bg-card, #fff); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
   .strip { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; min-height: 90px; align-items: center; }
   .strip-hint { color: #888; font-style: italic; text-align: center; width: 100%; }

@@ -17,6 +17,7 @@
   import { speak } from '$lib/tts';
   import { fade, fly, scale } from 'svelte/transition';
   import { browser } from '$app/environment';
+  import { onMount } from 'svelte';
 
   import SequenceStep from './SequenceStep.svelte';
   import DragDropZone from './DragDropZone.svelte';
@@ -322,14 +323,18 @@
     }
   }
 
-  // Add global touch event listeners for drag
-  if (browser) {
+  // The window-level handlers support touch dragging and are removed on unmount.
+  onMount(() => {
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
-  }
+    return () => {
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  });
 </script>
 
-<div class="sequence-trainer" ontouchmove={handleTouchMove} ontouchend={handleTouchEnd}>
+<div class="sequence-trainer">
   <!-- Top bar -->
   <header class="top-bar">
     <button class="back-btn" onclick={goBack} aria-label={$t('seq.back')}>
@@ -415,7 +420,7 @@
                 alt=""
                 class="seq-preview"
               />
-              <span class="seq-title">{seq.title[$locale] || seq.title.en}</span>
+              <span class="seq-title">{seq.title[$locale === 'sv' ? 'sv' : 'en']}</span>
               <span class="seq-steps">{seq.steps.length} {$t('seq.step')}</span>
             </button>
           {/each}

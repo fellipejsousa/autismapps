@@ -94,10 +94,10 @@
   </div>
 
   <div class="tempo-row">
-    <label class="tempo-label">
+    <label class="tempo-label" for="rhythm-beats-tempo">
       Tempo: {bpm} BPM
     </label>
-    <input type="range" min="40" max="140" step="10" bind:value={bpm} class="tempo-slider" />
+    <input id="rhythm-beats-tempo" type="range" min="40" max="140" step="10" bind:value={bpm} class="tempo-slider" />
   </div>
 
   <button class="play-btn" class:active={playing} onclick={toggle}>

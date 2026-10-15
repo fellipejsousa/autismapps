@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -25,9 +25,9 @@
 
   const ACTIVITY_ICONS = ['📚','🎨','🎮','⚽','🎵','🧩','📺','🍳','🧹','🚶','🏊','🚴','🎭','✏️','🧘'];
 
-  let completed = $state({});
-  let editing = $state(null);
-  let customActivities = $state({});
+  let completed = $state<Record<string, boolean>>({});
+  let editing = $state<string | null>(null);
+  let customActivities = $state<Record<string, string>>({});
   let showStar = $state(false);
 
   $effect(() => {
@@ -37,8 +37,8 @@
         if (data) {
           const today = new Date().toDateString();
           if (data.date === today) {
-            completed = data.completed || {};
-            customActivities = data.custom || {};
+            completed = data.completed && typeof data.completed === 'object' ? data.completed as Record<string, boolean> : {};
+            customActivities = data.custom && typeof data.custom === 'object' ? data.custom as Record<string, string> : {};
           }
         }
       });
@@ -56,7 +56,7 @@
     }
   }
 
-  async function toggle(id) {
+  async function toggle(id: string) {
     completed = { ...completed, [id]: !completed[id] };
     const slot = TIME_SLOTS.find(s => s.id === id);
     if (completed[id] && slot) speak(`${$t(`dayPlanner.slot.${id}`)} ✅`);
@@ -71,7 +71,7 @@
     }
   }
 
-  function setCustomIcon(slotId, icon) {
+  function setCustomIcon(slotId: string, icon: string) {
     customActivities = { ...customActivities, [slotId]: icon };
     editing = null;
     save();

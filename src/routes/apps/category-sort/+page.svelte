@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { base } from '$app/paths';
   import WelcomeDialog from '$lib/components/WelcomeDialog.svelte';
@@ -7,62 +7,85 @@
   import { fade, fly, scale } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import { awardStar, GoldStarBurst } from '$lib/rewards';
-  import { CATEGORY_SETS, getSetsForLevel, getAllItems, arasaacUrl } from '$lib/data/category-data.js';
+  import { CATEGORY_SETS, getAllItems, arasaacUrl } from '$lib/data/category-data.js';
 
-  // === State ===
-  let screen = $state('levels'); // 'levels' | 'sets' | 'playing' | 'odd' | 'done'
-  let selectedLevel = $state(null);
-  let selectedSet = $state(null);
-  let items = $state([]);
-  let currentItemIndex = $state(0);
-  let correctCount = $state(0);
-  let totalAttempts = $state(0);
-  let showStar = $state(false);
-  let feedback = $state(null); // { type: 'correct' | 'wrong', bucketId: null }
-  let feedbackTimer = $state(null);
-  let draggedItem = $state(null);
-  let hintShown = $state(false);
+  type Screen = 'levels' | 'sets' | 'playing' | 'odd' | 'done';
+  type SortItem = { id: string; nameKey: string; arasaacId: number; categoryId?: string; isOdd?: boolean };
+  type SortCategory = { id: string; labelKey: string; icon: string; items: SortItem[] };
+  type OddRound = { items: SortItem[]; hintKey: string };
+  type CategorySet = {
+    id: string;
+    level: number;
+    nameKey: string;
+    isOddOneOut?: boolean;
+    categories?: SortCategory[];
+    rounds?: OddRound[];
+  };
+  type Feedback = { type: 'correct' | 'wrong' | 'miss'; bucketId?: string };
+  type Point = { x: number; y: number };
+  type CustomSet = Record<string, unknown>;
+  type Level = { level: number; icon: string; descKey: string };
 
-  // Odd one out state
-  let oddRoundIndex = $state(0);
-  let oddItems = $state([]);
-  let oddFeedback = $state(null);
-  let oddCorrectCount = $state(0);
-
-  // Sorted items per bucket (for visual stacking)
-  let sortedItems = $state({});
-
-  // Touch drag state
-  let touchDragPos = $state(null);
-  let touchDragItem = $state(null);
-  let touchStartPos = $state(null);
-
-  // Custom categories
-  let showCustom = $state(false);
-  let customSets = $state(loadCustomSets());
-
-  const LEVELS = [
+  const categorySets = CATEGORY_SETS as unknown as CategorySet[];
+  const LEVELS: Level[] = [
     { level: 1, icon: '⭐', descKey: 'categorySort.level1desc' },
     { level: 2, icon: '⭐⭐', descKey: 'categorySort.level2desc' },
     { level: 3, icon: '⭐⭐⭐', descKey: 'categorySort.level3desc' },
     { level: 4, icon: '🤔', descKey: 'categorySort.level4desc' },
   ];
 
-  function loadCustomSets() {
+  // === State ===
+  let screen = $state<Screen>('levels');
+  let selectedLevel = $state<number | null>(null);
+  let selectedSet = $state<CategorySet | null>(null);
+  let items = $state<SortItem[]>([]);
+  let currentItemIndex = $state(0);
+  let correctCount = $state(0);
+  let totalAttempts = $state(0);
+  let showStar = $state(false);
+  let feedback = $state<Feedback | null>(null);
+  let feedbackTimer = $state<ReturnType<typeof setTimeout> | null>(null);
+  let draggedItem = $state<SortItem | null>(null);
+  let hintShown = $state(false);
+
+  // Odd one out state
+  let oddRoundIndex = $state(0);
+  let oddItems = $state<SortItem[]>([]);
+  let oddFeedback = $state<'correct' | 'wrong' | null>(null);
+  let oddCorrectCount = $state(0);
+
+  // Sorted items per bucket (for visual stacking)
+  let sortedItems = $state<Record<string, SortItem[]>>({});
+
+  // Touch drag state
+  let touchDragPos = $state<Point | null>(null);
+  let touchDragItem = $state<SortItem | null>(null);
+  let touchStartPos = $state<Point | null>(null);
+
+  // Custom categories
+  let showCustom = $state(false);
+  let customSets = $state<CustomSet[]>(loadCustomSets());
+
+  function setsForLevel(level: number): CategorySet[] {
+    return categorySets.filter((set) => set.level === level);
+  }
+
+  function loadCustomSets(): CustomSet[] {
     try {
-      return JSON.parse(localStorage.getItem('category-sort-custom') || '[]');
+      const value: unknown = JSON.parse(localStorage.getItem('category-sort-custom') || '[]');
+      return Array.isArray(value) ? value.filter((item): item is CustomSet => Boolean(item) && typeof item === 'object') : [];
     } catch { return []; }
   }
   function saveCustomSets() {
     localStorage.setItem('category-sort-custom', JSON.stringify(customSets));
   }
 
-  function selectLevel(level) {
+  function selectLevel(level: number) {
     selectedLevel = level;
     screen = 'sets';
   }
 
-  function selectSet(set) {
+  function selectSet(set: CategorySet) {
     selectedSet = set;
     if (set.isOddOneOut) {
       startOddOneOut(set);
@@ -71,8 +94,9 @@
     }
   }
 
-  function startSorting(set) {
-    items = getAllItems(set);
+  function startSorting(set: CategorySet) {
+    if (!set.categories) return;
+    items = getAllItems(set as Parameters<typeof getAllItems>[0]) as SortItem[];
     currentItemIndex = 0;
     correctCount = 0;
     totalAttempts = 0;
@@ -85,7 +109,7 @@
     screen = 'playing';
   }
 
-  function startOddOneOut(set) {
+  function startOddOneOut(set: CategorySet) {
     oddRoundIndex = 0;
     oddCorrectCount = 0;
     oddFeedback = null;
@@ -93,8 +117,9 @@
     screen = 'odd';
   }
 
-  function loadOddRound(set, index) {
-    const round = set.rounds[index];
+  function loadOddRound(set: CategorySet, index: number) {
+    const round = set.rounds?.[index];
+    if (!round) return;
     // Shuffle items
     const shuffled = [...round.items];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -106,16 +131,18 @@
     hintShown = false;
   }
 
-  function handleOddPick(item) {
+  function handleOddPick(item: SortItem) {
     if (oddFeedback) return;
+    const activeSet = selectedSet;
+    if (!activeSet?.rounds) return;
     if (item.isOdd) {
       oddFeedback = 'correct';
       oddCorrectCount++;
       speak($t('categorySort.oddCorrect'));
       setTimeout(() => {
-        if (oddRoundIndex < selectedSet.rounds.length - 1) {
+        if (oddRoundIndex < activeSet.rounds!.length - 1) {
           oddRoundIndex++;
-          loadOddRound(selectedSet, oddRoundIndex);
+          loadOddRound(activeSet, oddRoundIndex);
         } else {
           finishGame();
         }
@@ -133,23 +160,23 @@
   // Current item being sorted
   let currentItem = $derived(items[currentItemIndex]);
 
-  function speakItem(item) {
+  function speakItem(item: SortItem) {
     speak($t(item.nameKey));
   }
 
   // === Drag and Drop ===
-  function handleDragStart(e, item) {
+  function handleDragStart(e: DragEvent, item: SortItem) {
     draggedItem = item;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', item.id);
+    e.dataTransfer?.setData('text/plain', item.id);
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
   }
 
-  function handleDragOver(e) {
+  function handleDragOver(e: DragEvent) {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
   }
 
-  function handleDrop(e, categoryId) {
+  function handleDrop(e: DragEvent, categoryId: string) {
     e.preventDefault();
     if (!draggedItem) return;
     checkAnswer(draggedItem, categoryId);
@@ -157,8 +184,9 @@
   }
 
   // === Touch Drag ===
-  function handleTouchStart(e, item) {
+  function handleTouchStart(e: TouchEvent, item: SortItem) {
     const touch = e.touches[0];
+    if (!touch) return;
     touchStartPos = { x: touch.clientX, y: touch.clientY };
     touchDragItem = item;
     touchDragPos = { x: touch.clientX, y: touch.clientY };
@@ -166,22 +194,26 @@
     e.preventDefault();
   }
 
-  function handleTouchMove(e) {
+  function handleTouchMove(e: TouchEvent) {
     if (!touchDragItem) return;
     e.preventDefault();
     const touch = e.touches[0];
+    if (!touch) return;
     touchDragPos = { x: touch.clientX, y: touch.clientY };
   }
 
-  function handleTouchEnd(e) {
-    if (!touchDragItem) return;
+  function handleTouchEnd(_e: TouchEvent) {
+    const item = touchDragItem;
+    if (!item) return;
+    const position = touchDragPos;
+    const startPosition = touchStartPos;
     
     // Check if it was a tap (minimal movement)
-    if (touchStartPos && touchDragPos) {
-      const dx = Math.abs(touchDragPos.x - touchStartPos.x);
-      const dy = Math.abs(touchDragPos.y - touchStartPos.y);
+    if (startPosition && position) {
+      const dx = Math.abs(position.x - startPosition.x);
+      const dy = Math.abs(position.y - startPosition.y);
       if (dx < 10 && dy < 10) {
-        speakItem(touchDragItem);
+        speakItem(item);
         touchDragItem = null;
         touchDragPos = null;
         touchStartPos = null;
@@ -190,16 +222,16 @@
     }
 
     // Find which bucket we're over
-    const buckets = document.querySelectorAll('.sort-bucket');
+    const buckets = Array.from(document.querySelectorAll<HTMLElement>('.sort-bucket'));
     let found = false;
     for (const bucket of buckets) {
       const rect = bucket.getBoundingClientRect();
       if (
-        touchDragPos.x >= rect.left && touchDragPos.x <= rect.right &&
-        touchDragPos.y >= rect.top && touchDragPos.y <= rect.bottom
+        position && position.x >= rect.left && position.x <= rect.right &&
+        position.y >= rect.top && position.y <= rect.bottom
       ) {
         const catId = bucket.dataset.categoryId;
-        checkAnswer(touchDragItem, catId);
+        if (catId) checkAnswer(item, catId);
         found = true;
         break;
       }
@@ -208,7 +240,7 @@
     if (!found) {
       // Dropped outside — bounce back
       feedback = { type: 'miss' };
-      clearTimeout(feedbackTimer);
+      if (feedbackTimer) clearTimeout(feedbackTimer);
       feedbackTimer = setTimeout(() => feedback = null, 600);
     }
 
@@ -217,19 +249,19 @@
     touchStartPos = null;
   }
 
-  function checkAnswer(item, categoryId) {
+  function checkAnswer(item: SortItem, categoryId: string) {
     totalAttempts++;
     if (item.categoryId === categoryId) {
       // Correct!
       feedback = { type: 'correct', bucketId: categoryId };
       correctCount++;
-      sortedItems[categoryId] = [...sortedItems[categoryId], item];
+      sortedItems[categoryId] = [...(sortedItems[categoryId] ?? []), item];
       
       // Play correct sound (simple beep via AudioContext)
       playSound('correct');
       speak($t('categorySort.correct'));
       
-      clearTimeout(feedbackTimer);
+      if (feedbackTimer) clearTimeout(feedbackTimer);
       feedbackTimer = setTimeout(() => {
         feedback = null;
         if (currentItemIndex < items.length - 1) {
@@ -244,7 +276,7 @@
       feedback = { type: 'wrong', bucketId: categoryId };
       playSound('wrong');
       
-      clearTimeout(feedbackTimer);
+      if (feedbackTimer) clearTimeout(feedbackTimer);
       feedbackTimer = setTimeout(() => {
         feedback = null;
         hintShown = true;
@@ -253,8 +285,10 @@
   }
 
   async function finishGame() {
-    const total = selectedSet.isOddOneOut ? selectedSet.rounds.length : items.length;
-    const correct = selectedSet.isOddOneOut ? oddCorrectCount : correctCount;
+    const activeSet = selectedSet;
+    if (!activeSet) return;
+    const total = activeSet.isOddOneOut ? (activeSet.rounds?.length ?? 0) : items.length;
+    const correct = activeSet.isOddOneOut ? oddCorrectCount : correctCount;
     const stars = correct === total ? 3 : correct >= total * 0.7 ? 2 : correct > 0 ? 1 : 0;
     
     screen = 'done';
@@ -267,9 +301,9 @@
     }
   }
 
-  function playSound(type) {
+  function playSound(type: 'correct' | 'wrong') {
     try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = new window.AudioContext();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -303,13 +337,15 @@
   // Stars calculation for done screen
   let finalStars = $derived.by(() => {
     if (screen !== 'done') return 0;
-    const total = selectedSet?.isOddOneOut ? selectedSet.rounds.length : items.length;
+    const total = selectedSet?.isOddOneOut ? (selectedSet.rounds?.length ?? 0) : items.length;
     const correct = selectedSet?.isOddOneOut ? oddCorrectCount : correctCount;
     return correct === total ? 3 : correct >= total * 0.7 ? 2 : correct > 0 ? 1 : 0;
   });
 
-  let finalTotal = $derived(selectedSet?.isOddOneOut ? selectedSet?.rounds?.length : items.length);
+  let finalTotal = $derived(selectedSet?.isOddOneOut ? (selectedSet.rounds?.length ?? 0) : items.length);
   let finalCorrect = $derived(selectedSet?.isOddOneOut ? oddCorrectCount : correctCount);
+  let activeCategories = $derived(selectedSet?.categories ?? []);
+  let activeRounds = $derived(selectedSet?.rounds ?? []);
 </script>
 
 <WelcomeDialog appId="category-sort" titleKey="app.category_sort" purposeKey="welcome.categorySort.purpose" howKey="welcome.categorySort.how" goalKey="welcome.categorySort.goal" icon="📦" />
@@ -347,7 +383,7 @@
     {:else if screen === 'sets'}
       <h2>{$t('categorySort.pickSet')}</h2>
       <div class="set-grid">
-        {#each getSetsForLevel(selectedLevel) as set}
+        {#each setsForLevel(selectedLevel ?? 1) as set}
           <button class="set-card" onclick={() => selectSet(set)} in:fly={{ y: 20, delay: 50 }}>
             <span class="set-icons">
               {#if set.isOddOneOut}
@@ -372,39 +408,44 @@
         <p class="items-left">{$t('categorySort.itemsLeft', { count: String(items.length - currentItemIndex) })}</p>
 
         <!-- Current item to sort -->
-        <div class="item-area"
+        <div class="item-area" role="group" aria-label={$t('categorySort.dragHint')}
           ontouchstart={(e) => handleTouchStart(e, currentItem)}
           ontouchmove={handleTouchMove}
           ontouchend={handleTouchEnd}
         >
-          <div
+          <button type="button"
             class="item-card"
             class:bounce={feedback?.type === 'wrong' || feedback?.type === 'miss'}
             class:correct-flash={feedback?.type === 'correct'}
             draggable="true"
             ondragstart={(e) => handleDragStart(e, currentItem)}
             onclick={() => speakItem(currentItem)}
-            role="img"
             aria-label={$t(currentItem.nameKey)}
+            onkeydown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                speakItem(currentItem);
+              }
+            }}
           >
             <img src={arasaacUrl(currentItem.arasaacId)} alt={$t(currentItem.nameKey)} loading="lazy" />
             <span class="item-label">{$t(currentItem.nameKey)}</span>
-          </div>
+          </button>
           <p class="drag-hint">{$t(hintShown ? `categorySort.cat.${currentItem.categoryId}` : 'categorySort.dragHint')}</p>
         </div>
 
         <!-- Category buckets -->
-        <div class="buckets" class:three-col={selectedSet.categories.length >= 3}>
-          {#each selectedSet.categories as cat}
-            <div
+        <div class="buckets" class:three-col={activeCategories.length >= 3}>
+          {#each activeCategories as cat}
+            <button type="button"
               class="sort-bucket"
               class:bucket-correct={feedback?.type === 'correct' && feedback?.bucketId === cat.id}
               class:bucket-wrong={feedback?.type === 'wrong' && feedback?.bucketId === cat.id}
               data-category-id={cat.id}
               ondragover={handleDragOver}
               ondrop={(e) => handleDrop(e, cat.id)}
-              role="button"
               aria-label={$t(cat.labelKey)}
+              onclick={() => currentItem && checkAnswer(currentItem, cat.id)}
             >
               <div class="bucket-header">
                 <span class="bucket-icon">{cat.icon}</span>
@@ -421,7 +462,7 @@
                 {/each}
               </div>
               <span class="bucket-count">{(sortedItems[cat.id] || []).length}</span>
-            </div>
+            </button>
           {/each}
         </div>
       </div>
@@ -429,7 +470,7 @@
     <!-- ODD ONE OUT -->
     {:else if screen === 'odd'}
       <div class="game-area">
-        <p class="round-info">{$t('categorySort.round', { current: String(oddRoundIndex + 1), total: String(selectedSet.rounds.length) })}</p>
+        <p class="round-info">{$t('categorySort.round', { current: String(oddRoundIndex + 1), total: String(activeRounds.length) })}</p>
         <h2 class="odd-title">{$t('categorySort.oddOneOut')}</h2>
         
         <div class="odd-grid">
@@ -447,9 +488,9 @@
           {/each}
         </div>
 
-        {#if hintShown && selectedSet.rounds[oddRoundIndex]}
+        {#if hintShown && activeRounds[oddRoundIndex]}
           <p class="hint" in:fly={{ y: 10 }}>
-            💡 {$t('categorySort.oddHint', { hint: $t(selectedSet.rounds[oddRoundIndex].hintKey) })}
+            💡 {$t('categorySort.oddHint', { hint: $t(activeRounds[oddRoundIndex].hintKey) })}
           </p>
         {/if}
       </div>
@@ -466,7 +507,7 @@
           {/each}
         </div>
         <div class="done-actions">
-          <button class="action-btn" onclick={() => selectSet(selectedSet)}>🔄 {$t('categorySort.playAgain')}</button>
+          <button class="action-btn" onclick={() => selectedSet && selectSet(selectedSet)}>🔄 {$t('categorySort.playAgain')}</button>
           <button class="action-btn" onclick={() => { screen = 'sets'; }}>📋 {$t('categorySort.newSet')}</button>
           <button class="action-btn" onclick={() => { screen = 'levels'; }}>🏠 {$t('categorySort.backToLevels')}</button>
         </div>
@@ -518,7 +559,7 @@
 
   /* Item card to drag */
   .item-area { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:.5rem 0; }
-  .item-card { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:1rem; background:var(--bg-card); border:3px solid var(--border); border-radius:20px; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; transition: transform .2s, border-color .2s, background .2s; max-width:160px; }
+  .item-card { display:flex; flex-direction:column; align-items:center; gap:.5rem; padding:1rem; color:inherit; font:inherit; background:var(--bg-card); border:3px solid var(--border); border-radius:20px; cursor:grab; user-select:none; -webkit-user-select:none; touch-action:none; transition: transform .2s, border-color .2s, background .2s; max-width:160px; }
   .item-card:active { cursor:grabbing; transform:scale(1.05); }
   .item-card img { width:100px; height:100px; object-fit:contain; pointer-events:none; }
   .item-label { font-weight:700; font-size:1.1rem; }
@@ -538,7 +579,7 @@
   /* Buckets */
   .buckets { display:grid; grid-template-columns:repeat(2,1fr); gap:.75rem; }
   .buckets.three-col { grid-template-columns:repeat(3,1fr); }
-  .sort-bucket { border:3px dashed var(--border); border-radius:20px; padding:.75rem; min-height:120px; display:flex; flex-direction:column; align-items:center; gap:.5rem; transition: border-color .2s, background .2s, transform .15s; background:var(--bg-card); }
+  .sort-bucket { border:3px dashed var(--border); border-radius:20px; padding:.75rem; min-height:120px; display:flex; flex-direction:column; align-items:center; gap:.5rem; transition: border-color .2s, background .2s, transform .15s; background:var(--bg-card); color:inherit; font:inherit; cursor:pointer; }
   .sort-bucket:hover { border-color: #2196f3; }
   .bucket-correct { border-color:#4caf50 !important; background:#e8f5e9 !important; border-style:solid !important; transform:scale(1.02); }
   .bucket-wrong { border-color:#f44336 !important; background:#ffebee !important; animation: shake .3s ease; }

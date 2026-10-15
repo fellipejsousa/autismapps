@@ -180,7 +180,6 @@
 
 <style>
   .break-page { display: flex; flex-direction: column; min-height: 100dvh; }
-  .back-btn:hover { background: var(--bg-hover); }
 
   .menu-page { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
   .instruction { text-align: center; color: var(--text-muted); font-weight: 600; }

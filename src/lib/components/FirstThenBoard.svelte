@@ -1,20 +1,30 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
   import { speak } from '$lib/tts';
-  import { getArasaacUrl, ARASAAC_IDS } from '$lib/data/transition-helper';
+  import { ACTIVITIES, getArasaacUrl, ARASAAC_IDS } from '$lib/data/transition-helper';
   import type { Activity, SavedTransition } from '$lib/data/transition-helper';
   import ActivityGrid from './ActivityGrid.svelte';
 
   interface Props {
     onStartTimer: () => void;
+    onSaved?: () => void;
+    preset?: { firstId: string; thenId: string; revision?: number } | null;
   }
 
-  let { onStartTimer }: Props = $props();
+  let { onStartTimer, onSaved, preset = null }: Props = $props();
 
   let firstActivity = $state<Activity | null>(null);
   let thenActivity = $state<Activity | null>(null);
   let pickingFor = $state<'first' | 'then' | null>(null);
   let justSaved = $state(false);
+
+  $effect(() => {
+    if (!preset) return;
+    // Read revision so choosing the same saved pair twice reapplies it.
+    void preset.revision;
+    firstActivity = ACTIVITIES.find((activity) => activity.id === preset.firstId) ?? null;
+    thenActivity = ACTIVITIES.find((activity) => activity.id === preset.thenId) ?? null;
+  });
 
   function selectActivity(activity: Activity) {
     if (pickingFor === 'first') {
@@ -49,6 +59,7 @@
       });
       localStorage.setItem('th-saved-transitions', JSON.stringify(saved));
     }
+    onSaved?.();
     justSaved = true;
     speak($t('th.saved'));
     setTimeout(() => justSaved = false, 2000);
