@@ -16,18 +16,37 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build && cp build/fallback.html build/404.html
+      - name: Build the root site and launcher
+        run: |
+          npm run build
+          cp build/fallback.html build/404.html
+
+          temp_dir="$(mktemp -d)"
+          mv build "$temp_dir/root"
+
+          LAUNCHER_BASE_PATH=/autismapps/launcher npm run build:launcher
+          mv build "$temp_dir/launcher"
+
+          mv "$temp_dir/root" build
+          mkdir -p build/launcher
+          cp -a "$temp_dir/launcher/." build/launcher/
+
+          test -f build/index.html
+          test -f build/launcher/index.html
+          test -f build/launcher/404.html
+          test -f build/launcher/apps/traffic-safety/index.html
+          grep -q '/autismapps/launcher/_app/' build/launcher/index.html
         env:
           NODE_OPTIONS: '--unhandled-rejections=warn'
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: build
 
@@ -39,4 +58,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
