@@ -1,5 +1,5 @@
 // Build the static site for deployment under https://autismappar.se/launcher/.
-process.env.BASE_PATH = '/launcher';
+process.env.BASE_PATH = process.env.LAUNCHER_BASE_PATH || '/launcher';
 process.env.CI = 'true';
 
 import { copyFileSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
