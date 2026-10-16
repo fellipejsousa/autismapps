@@ -4,8 +4,23 @@
  * Hosted at autismappar.se/bildstod
  */
 
-const REMOTE_BILDSTOD_BASE = 'https://autismappar.se/bildstod/bildstod-service';
-const BILDSTOD_API = `${REMOTE_BILDSTOD_BASE}/api/pictograms.json`;
+const DEFAULT_BILDSTOD_BASE = 'https://autismappar.se/bildstod/bildstod-service';
+
+function getBildstodBase(): string {
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname.toLowerCase();
+    const isAutismappsDomain = hostname === 'autismappar.se'
+      || hostname.endsWith('.autismappar.se')
+      || hostname === 'autismapps.online'
+      || hostname.endsWith('.autismapps.online');
+
+    // Both production domains ship the Bildstöd service. Keeping requests on
+    // the current origin avoids cross-origin failures on autismapps.online.
+    if (isAutismappsDomain) return `${window.location.origin}/bildstod/bildstod-service`;
+  }
+
+  return DEFAULT_BILDSTOD_BASE;
+}
 
 export interface BildstodPictogram {
   id: number;
@@ -58,7 +73,7 @@ export async function loadBildstod(): Promise<BildstodData> {
   if (cache) return cache;
   
   try {
-    const res = await fetchWithTimeout(BILDSTOD_API);
+    const res = await fetchWithTimeout(`${getBildstodBase()}/api/pictograms.json`);
     const ct = res.headers.get('content-type') || '';
     if (res.ok && ct.includes('json')) {
       const data: unknown = await res.json();
@@ -82,6 +97,7 @@ export async function searchBildstod(
   lang: string = 'sv'
 ): Promise<{ id: number; keyword: string; url: string; slug: string; source: 'bildstod' }[]> {
   const data = await loadBildstod();
+  const bildstodBase = getBildstodBase();
   const q = query.toLowerCase().trim();
   
   if (!q) return [];
@@ -136,7 +152,7 @@ export async function searchBildstod(
       results.push({
         id: p.id >= 900000 ? p.id : p.id + 900000, // Offset only if not already offset
         keyword: matchedKeyword,
-        url: `${REMOTE_BILDSTOD_BASE}/${p.files.png_500}`,
+        url: `${bildstodBase}/${p.files.png_500}`,
         slug: p.slug,
         source: 'bildstod' as const,
         score
@@ -162,5 +178,5 @@ export async function getBildstodBySlug(slug: string): Promise<BildstodPictogram
  */
 export function getBildstodUrl(slug: string, format: 'svg' | 'png' = 'png'): string {
   const ext = format === 'svg' ? `${slug}.svg` : `${slug}.png`;
-  return `${REMOTE_BILDSTOD_BASE}/pictograms/${ext}`;
+  return `${getBildstodBase()}/pictograms/${ext}`;
 }
