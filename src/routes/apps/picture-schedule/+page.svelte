@@ -246,6 +246,10 @@
   $effect(() => { loadSchedules(); });
 </script>
 
+<svelte:head>
+  <title>{$t('app.picture_schedule')} — {$t('app.title.brand')}</title>
+</svelte:head>
+
 <WelcomeDialog appId="picture-schedule" titleKey="app.picture_schedule" purposeKey="welcome.pictureSchedule.purpose" howKey="welcome.pictureSchedule.how" goalKey="welcome.pictureSchedule.goal" icon="🖼️" />
 
 <div class="schedule-app">

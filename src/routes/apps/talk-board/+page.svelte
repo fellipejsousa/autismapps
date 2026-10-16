@@ -116,6 +116,10 @@
   $effect(() => { loadBoards(); });
 </script>
 
+<svelte:head>
+  <title>{$t('app.talk_board')} — {$t('app.title.brand')}</title>
+</svelte:head>
+
 <WelcomeDialog appId="talk-board" titleKey="app.talk_board" purposeKey="welcome.talkBoard.purpose" howKey="welcome.talkBoard.how" goalKey="welcome.talkBoard.goal" icon="🗣️" />
 
 <div class="talk-board" class:fullscreen={isFullscreen}>

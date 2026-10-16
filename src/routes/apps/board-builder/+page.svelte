@@ -210,6 +210,10 @@
   $effect(() => { loadSavedBoards(); });
 </script>
 
+<svelte:head>
+  <title>{$t('app.board_builder')} — {$t('app.title.brand')}</title>
+</svelte:head>
+
 <WelcomeDialog appId="board-builder" titleKey="app.board_builder" purposeKey="welcome.boardBuilder.purpose" howKey="welcome.boardBuilder.how" goalKey="welcome.boardBuilder.goal" icon="🧩" />
 
 <div class="board-builder">
