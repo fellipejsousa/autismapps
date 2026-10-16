@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 
 const basePath = (process.env.LAUNCHER_BASE_PATH || '/launcher').replace(/\/$/, '');
+const canonicalBasePath = (process.env.CANONICAL_BASE_PATH || '/launcher').replace(/\/$/, '');
 const variants = [
 	{ code: 'en', directory: 'build', host: 'autismapps.online', brand: 'Autismapps', marker: 'All tools' },
 	{ code: 'sv', directory: 'build-sv', host: 'autismappar.se', brand: 'Autismappar', marker: 'Alla verktyg' }
@@ -26,7 +27,7 @@ for (const variant of variants) {
 	const home = readFileSync(join(root, 'index.html'), 'utf8');
 	expect(home.includes(`<html lang="${variant.code}"`), `${variant.directory}: wrong home lang`);
 	expect(home.includes(variant.marker), `${variant.directory}: missing localized home marker`);
-	expect(home.includes(`href="https://${variant.host}${basePath}/"`), `${variant.directory}: wrong home canonical host`);
+	expect(home.includes(`href="https://${variant.host}${canonicalBasePath}/"`), `${variant.directory}: wrong home canonical host`);
 	expect(home.includes(`content="${variant.brand}"`), `${variant.directory}: wrong site brand metadata`);
 	expect(home.includes(`${basePath}/manifest-${variant.code}.json`), `${variant.directory}: wrong language manifest`);
 
@@ -35,7 +36,7 @@ for (const variant of variants) {
 		expect(existsSync(path), `${variant.directory}: missing route ${slug}`);
 		const html = readFileSync(path, 'utf8');
 		expect(html.includes(`<html lang="${variant.code}"`), `${variant.directory}/${slug}: wrong lang`);
-		expect(html.includes(`href="https://${variant.host}${basePath}/apps/${slug}/"`), `${variant.directory}/${slug}: wrong canonical`);
+		expect(html.includes(`href="https://${variant.host}${canonicalBasePath}/apps/${slug}/"`), `${variant.directory}/${slug}: wrong canonical`);
 		expect(html.includes(`content="${variant.brand}"`), `${variant.directory}/${slug}: wrong brand metadata`);
 
 		const assets = [

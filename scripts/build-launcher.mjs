@@ -35,6 +35,7 @@ addDirectoryIndexes(outputDirectory);
 const brand = prerenderLocale === 'sv' ? 'Autismappar' : 'Autismapps';
 const canonicalHost = prerenderLocale === 'sv' ? 'https://autismappar.se' : 'https://autismapps.online';
 const basePath = process.env.BASE_PATH.replace(/\/$/, '');
+const canonicalBasePath = (process.env.CANONICAL_BASE_PATH || '/launcher').replace(/\/$/, '');
 function localizeDocumentMetadata(directory) {
 	for (const entry of readdirSync(directory, { withFileTypes: true })) {
 		const path = join(directory, entry.name);
@@ -48,7 +49,7 @@ function localizeDocumentMetadata(directory) {
 		let route = relativePath.replace(/(?:^|\/)index\.html$/, '/').replace(/\.html$/, '');
 		if (!route.startsWith('/')) route = `/${route}`;
 		if (route === '/fallback' || route === '/404') route = '/';
-		const canonical = `${canonicalHost}${basePath}${route === '/' ? '/' : route}`;
+		const canonical = `${canonicalHost}${canonicalBasePath}${route === '/' ? '/' : route}`;
 		let html = readFileSync(path, 'utf8')
 			.replace(/<html lang="[^"]*"/, `<html lang="${prerenderLocale}"`)
 			.replace(/(<link rel="manifest" href=")[^"]*/, `$1${basePath}/manifest-${prerenderLocale}.json`)
