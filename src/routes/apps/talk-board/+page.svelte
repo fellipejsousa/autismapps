@@ -123,6 +123,7 @@
 <WelcomeDialog appId="talk-board" titleKey="app.talk_board" purposeKey="welcome.talkBoard.purpose" howKey="welcome.talkBoard.how" goalKey="welcome.talkBoard.goal" icon="🗣️" />
 
 <div class="talk-board" class:fullscreen={isFullscreen}>
+  <div class="page-title"><h1>{$t('app.talk_board')}</h1></div>
   {#if showBoardList}
     <!-- Board selector -->
     <div class="board-selector">
@@ -235,7 +236,7 @@
   /* Board selector */
   .board-selector {
     max-width: 500px;
-    margin: 40px auto;
+    margin: 8px auto 40px;
     width: 100%;
   }
   .board-selector h2 {

@@ -19,4 +19,5 @@
   icon="👅"
 />
 
+<div class="page-title"><h1>{$t('tongueViewer.title')}</h1></div>
 <TongueViewer />
