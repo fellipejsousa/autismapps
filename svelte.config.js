@@ -2,12 +2,13 @@ import adapter from '@sveltejs/adapter-static';
 
 /** @type {import('@sveltejs/kit').Config} */
 const dev = process.env.NODE_ENV !== 'production';
+const outputDirectory = process.env.BUILD_OUTPUT_DIR || 'build';
 
 const config = {
 	kit: {
 		adapter: adapter({
-			pages: 'build',
-			assets: 'build',
+			pages: outputDirectory,
+			assets: outputDirectory,
 			fallback: 'fallback.html'
 		}),
 		paths: {

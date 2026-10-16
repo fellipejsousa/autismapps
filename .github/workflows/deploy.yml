@@ -32,7 +32,8 @@ jobs:
           temp_dir="$(mktemp -d)"
           mv build "$temp_dir/root"
 
-          LAUNCHER_BASE_PATH=/autismapps/launcher npm run build:launcher
+          LAUNCHER_BASE_PATH=/autismapps/launcher npm run build:launcher:domains
+          LAUNCHER_BASE_PATH=/autismapps/launcher npm run verify:launcher:locales
           mv build "$temp_dir/launcher"
 
           mv "$temp_dir/root" build

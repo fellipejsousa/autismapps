@@ -12,3 +12,5 @@ src-tauri/binaries/
 arasaac-sv-keywords*.json
 arasaac-sv-plurals*
 deepl-*.json
+
+build-sv

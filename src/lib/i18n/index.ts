@@ -24,7 +24,11 @@ const translations: Record<string, TranslationCatalog> = {
   sv: flattenCatalog(sv)
 };
 
-export const locale = writable('en');
+// Static builds are published on two language-specific domains. Seed the
+// prerendered HTML with the matching language; the browser still selects its
+// domain locale in the root layout before hydrating the page.
+const initialLocale = import.meta.env.SSR && import.meta.env.VITE_PRERENDER_LOCALE === 'sv' ? 'sv' : 'en';
+export const locale = writable(initialLocale);
 export const fallbackLocale = 'en';
 
 export async function loadLocale(lang: string) {
