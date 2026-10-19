@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { ALL_APPS, isAvailableIn, isBlockedIn, NOT_ADAPTED_PT } from '../../src/lib/apps.ts';
 
 const EXPECTED_PT_BLOCKED = [];
@@ -32,4 +34,20 @@ test('isBlockedIn only looks at the locale, never at ready', () => {
 
 test('every blocked id exists in the registry', () => {
   for (const id of EXPECTED_PT_BLOCKED) assert.ok(ALL_APPS.some((a) => a.id === id), id);
+});
+
+test('every app card points to its own unique route, page, and icon', () => {
+  const routes = new Set();
+  for (const app of ALL_APPS) {
+    const expectedRoute = `/apps/${app.id}`;
+    assert.equal(app.route, expectedRoute, `${app.id}: route must match its app id`);
+    assert.ok(!routes.has(app.route), `${app.id}: duplicate route ${app.route}`);
+    routes.add(app.route);
+
+    const page = join('src', 'routes', 'apps', app.id, '+page.svelte');
+    assert.ok(existsSync(page), `${app.id}: route page is missing (${page})`);
+
+    const iconPath = app.icon.replace(/^\/+/, '');
+    assert.ok(existsSync(join('static', iconPath)), `${app.id}: icon is missing (${app.icon})`);
+  }
 });
