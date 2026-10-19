@@ -4,6 +4,7 @@ import { join } from 'node:path';
 const catalogUrl = 'https://api.arasaac.org/v1/pictograms/all/en';
 const lookupPath = new URL('../static/arasaac-sv.json', import.meta.url);
 const trafficPath = new URL('../static/pictograms/traffic-safety', import.meta.url);
+const pictogramSourcePath = new URL('../src/lib/data/arasaac-data.js', import.meta.url);
 
 // Human-reviewed semantic overrides where the exact English catalog keyword is
 // misleading or the closest suitable ARASAAC image uses a different keyword.
@@ -19,9 +20,10 @@ function normalizeKeyword(value) {
   return value.trim().toLocaleLowerCase('en').replace(/^\\(["\\])$/, '$1');
 }
 
-const [lookupText, trafficFiles, catalogResponse] = await Promise.all([
+const [lookupText, trafficFiles, pictogramSource, catalogResponse] = await Promise.all([
   readFile(lookupPath, 'utf8'),
   readdir(trafficPath),
+  readFile(pictogramSourcePath, 'utf8'),
   fetch(catalogUrl)
 ]);
 
@@ -34,6 +36,24 @@ const catalog = await catalogResponse.json();
 const byId = new Map(catalog.map((pictogram) => [String(pictogram._id), pictogram]));
 const errors = [];
 let uniqueIds = new Set();
+
+// Parse the simple numeric map from the source used by the UI so the card
+// mappings and the local PNG bundle cannot silently drift apart.
+const idsBlock = pictogramSource.match(/export const ARASAAC_IDS = \{([\s\S]*?)\n\};/);
+if (!idsBlock) {
+  errors.push('ARASAAC_IDS: could not find the exported pictogram map');
+}
+const pictogramIds = Object.fromEntries(
+  [...(idsBlock?.[1] ?? '').matchAll(/^\s*([A-Za-z]\w*):\s*(\d+|null)\s*(?:,|$)/gm)]
+    .map(([, key, value]) => [key, value === 'null' ? null : Number(value)])
+);
+const localPngIds = new Set(trafficFiles.filter((file) => file.endsWith('.png')).map((file) => file.slice(0, -4)));
+for (const [key, id] of Object.entries(pictogramIds)) {
+  if (id !== null && !localPngIds.has(String(id))) errors.push(`ARASAAC_IDS.${key}: missing local PNG ${id}.png`);
+}
+for (const [key, id] of Object.entries({ trafficLight: 2567, crosswalk: 3430, warning: 25315, safePlace: 6964, reflector: 39534, car: 2339 })) {
+  if (pictogramIds[key] !== id) errors.push(`traffic-safety card ${key}: expected pictogram ${id}, got ${pictogramIds[key] ?? 'missing'}`);
+}
 
 // Keep the traffic-safety tile on the locally bundled house illustration.
 // The generic "safe" lookup is a strongbox, which is misleading for this app.
@@ -70,6 +90,7 @@ for (const file of pngFiles) {
 
 console.log(`Checked ${Object.keys(lookup).length} Swedish lookup entries across ${uniqueIds.size} pictogram IDs.`);
 console.log(`Checked ${pngFiles.length} local traffic-safety PNGs against the catalog and PNG signature.`);
+console.log(`Checked ${Object.values(pictogramIds).filter((id) => id !== null).length} source ID assignments and six traffic-safety card mappings against the local PNG bundle.`);
 console.log(`ARASAAC English catalog: ${catalog.length} pictograms.`);
 
 if (errors.length) {
