@@ -25,6 +25,7 @@ jobs:
       - run: npm run audit:pictograms
       - run: npm run build:launcher:domains
       - run: npm run verify:launcher:locales
+      - run: npm run audit:links
       - run: npm run build
         env:
           NODE_OPTIONS: '--unhandled-rejections=warn'
