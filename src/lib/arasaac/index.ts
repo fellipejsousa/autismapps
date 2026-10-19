@@ -1,5 +1,6 @@
 import { loadSvLookup } from './sv-lookup';
 import { searchBildstod } from './bildstod';
+import { normalizePictogramKeyword } from './search-normalize.js';
 
 const API_BASE = 'https://api.arasaac.org/v1';
 const CACHE_NAME = 'arasaac-pictograms';
@@ -33,7 +34,7 @@ export async function searchPictograms(
   query: string,
   lang: string = 'en'
 ): Promise<PictogramSearchResult[]> {
-  const queryLower = query.normalize('NFKC').toLocaleLowerCase('en').trim();
+  const queryLower = normalizePictogramKeyword(query);
   const seenIds = new Set<number>();
   const results: PictogramSearchResult[] = [];
 
@@ -105,7 +106,7 @@ export async function searchPictograms(
       // ARASAAC search is fuzzy. Do not show a loosely related result when
       // the local Swedish vocabulary has no match for the user's exact term.
       const exactKeyword = p.keywords.find(
-        ({ keyword }) => keyword.normalize('NFKC').toLocaleLowerCase('en').trim() === queryLower
+        ({ keyword }) => normalizePictogramKeyword(keyword) === queryLower
       );
       if (!exactKeyword) continue;
       const enKeyword = exactKeyword.keyword;
